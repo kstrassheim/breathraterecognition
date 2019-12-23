@@ -1,10 +1,16 @@
 import React, { Component } from 'react';
 import * as signalR from "@microsoft/signalr"
+import Chart from 'chart.js'
+import moment from 'moment'
 
 export class Home extends Component {
   static displayName = Home.name;
+    chart = null;
+    buffer = [];
+    bufferSize = 5;
 
     componentDidMount = () => {
+        //this.initChart('Server');
         const hubConnection = new signalR.HubConnectionBuilder()
             .withUrl("/measurement")
             .configureLogging(signalR.LogLevel.Information)
@@ -13,27 +19,114 @@ export class Home extends Component {
             .then(() => console.log('Connection started!'))
             .catch(err => console.log('Error while establishing connection :('));
         hubConnection.on('measurement', (metric) => {
-            console.log(metric.value);
+            this.addData(metric);
+        });
+    }
+
+    getRandomColor() {
+        var letters = '0123456789ABCDEF', color = '#';
+        for (var i = 0; i < 6; i++) {color += letters[Math.floor(Math.random() * 16)];  }
+        return color;
+    }
+
+    addData(metric) {
+
+        this.buffer.push(metric);
+
+        if (this.buffer.length > this.bufferSize) {
+
+            var first = this.buffer[0];
+            // init chart if not available
+            if (!this.chart) {
+                this.chart = this.initChart(first.name);
+            }
+
+            // get dataset
+            var dsa = this.chart.data.datasets.length > 0 ? this.chart.data.datasets.filter((d) => d.label == first.port) : null;
+            var ds = dsa && dsa.length > 0 ? dsa[0] : null;
+            if (!ds) {
+                ds = {
+                    data: [],
+                    label: first.port,
+                    borderColor: this.getRandomColor(),
+                    fill: false
+                }
+                this.chart.data.datasets.push(ds);
+            }
+
+            // insert new values
+            if (this.chart.options.title.text == first.name) {
+                for (var i = 0; i < this.buffer.length; i++) {
+                    ds.data.push({ x: this.buffer[i].timestamp, y: this.buffer[i].value });
+                }
+            }
+
+            // delete old values if expired
+            if (moment.duration(moment().diff(ds.data[0].x)).asSeconds() > 60) { ds.data.splice(0, this.buffer.length); }
+
+            this.chart.update();
+
+            // delete buffer
+            this.buffer.splice(0, this.buffer.length);
+        }
+    }
+
+    initChart(name) {
+        return new Chart(document.getElementById("measurementChart"), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: []
+            },
+            options: {
+                title: {
+                    display: true,
+                    text: name
+                },
+                responsive: true,
+                scales: {
+                    xAxes: [{
+                        type: "time",
+                        time: {
+                            //parser: timeFormat,
+                            //tooltipFormat: 'hh:mm:ss fff',
+                            displayFormats: {
+                                millisecond: 'HH:mm:ss.SSS',
+                                second: 'HH:mm:ss',
+                                minute: 'HH:mm',
+                                hour: 'HH'
+                            }
+                            //tooltipFormat: 'll',
+                            //minUnit: 'millisecond',
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Time'
+                        },
+                        //ticks: {
+                        //    //min: 0,
+                        //    //max: 100,
+
+                        //    // forces step size to be 5 units
+                        //    stepSize: 0.1 // <----- This prop sets the stepSize
+                        //}
+                    }],
+                    yAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Value'
+                        }
+                    }]
+                }
+            }
         });
     }
 
     render () {
     return (
         <div>
-        <h1>Hello, world!</h1>
-        <p>Welcome to your new single-page application, built with:</p>
-        <ul>
-            <li><a href='https://get.asp.net/'>ASP.NET Core</a> and <a href='https://msdn.microsoft.com/en-us/library/67ef8sbd.aspx'>C#</a> for cross-platform server-side code</li>
-            <li><a href='https://facebook.github.io/react/'>React</a> for client-side code</li>
-            <li><a href='http://getbootstrap.com/'>Bootstrap</a> for layout and styling</li>
-        </ul>
-        <p>To help you get started, we have also set up:</p>
-        <ul>
-            <li><strong>Client-side navigation</strong>. For example, click <em>Counter</em> then <em>Back</em> to return here.</li>
-            <li><strong>Development server integration</strong>. In development mode, the development server from <code>create-react-app</code> runs in the background automatically, so your client-side resources are dynamically built on demand and the page refreshes when you modify any file.</li>
-            <li><strong>Efficient production builds</strong>. In production mode, development-time features are disabled, and your <code>dotnet publish</code> configuration produces minified, efficiently bundled JavaScript files.</li>
-        </ul>
-        <p>The <code>ClientApp</code> subdirectory is a standard React application based on the <code>create-react-app</code> template. If you open a command prompt in that directory, you can run <code>npm</code> commands such as <code>npm test</code> or <code>npm install</code>.</p>
+            <h1>Breath rate recognition</h1>
+            <canvas id="measurementChart"></canvas>
         </div>
     );
   }

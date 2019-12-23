@@ -19,7 +19,7 @@ namespace Server.Measurement
             HubContext = hubContext;
         }
 
-        private const string AppName = "Server";
+        private readonly string AppName = System.Environment.MachineName;
         public IHubContext<MeasurementDistributionHub> HubContext;
        
         private List<Task> Tasks = null;
@@ -38,18 +38,19 @@ namespace Server.Measurement
 
                 var sp = new SerialPort(port, 115200);
                 sp.Open();
+                Console.WriteLine($"Reading Data from Port:{port}");
                 while (true)
                 {
                     int val = 0;
                     var line = sp.ReadLine()?.Split(',');
                     if (line != null && line.Length > 3 && int.TryParse(line?[4], out val))
                     {
-                        Console.WriteLine(val);
                         var m = new Metric()
                         {
                             Name = AppName,
                             Port = port,
-                            Value = val
+                            Value = val,
+                            Timestamp = DateTime.Now
                         };
 
                         this.HubContext.Clients.All.SendAsync("measurement", m);
