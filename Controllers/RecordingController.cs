@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web.Http.OData;
 using BreathRateRecognition.Model;
+using BreathRateRecognition.Model.DB;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,43 +16,84 @@ namespace BreathRateRecognition.Controllers
     {
         // GET: api/Recording/GetNewId
         [HttpGet]
-        public async Task<Recording[]> Get()
+        [EnableQuery]
+        public async Task<IQueryable<Recording>> Get()
         {
-            return new Recording[] { new Recording() { Id = new Random().Next(0, 10000) }, new Recording() { Id = new Random().Next(0, 10000) } };
+            using (var db = new BreathRateRecognitionContext())
+            {
+                return db.Recordings;
+            }
         }
 
         // GET: api/Recording/5
         [HttpGet("{id}", Name = "Get")]
-        public Recording Get(int id)
+        public async Task<Recording> Get(int id)
         {
-            if (id < 1)
+            using (var db = new BreathRateRecognitionContext())
             {
-                return new Recording() { Id = new Random().Next(0, 10000) };
-            }
-            else
-            {
-                return new Recording() { Id = id };
+                if (id < 1)
+                {
+                    var r = new Recording();
+                    db.Recordings.Add(r);
+                    await db.SaveChangesAsync();
+                    return r;
+                }
+                else
+                {
+                    return db.Recordings.FirstOrDefault(o => o.Id == id);
+                }
             }
         }
 
         // POST: api/Recording
-        //[HttpPost]
-        //public async void Post([FromBody] Recording recording)
-        //{
-        //    var i = recording.Metrics.Length;
-        //}
+        [HttpPost]
+        public async void Post([FromBody] Recording recording)
+        {
+            using (var db = new BreathRateRecognitionContext())
+            {
+                if (db.Recordings.Any(o=>o.Id == recording.Id))
+                {
+                    db.Attach(recording);
+                    db.Entry(recording).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                    await db.SaveChangesAsync();
+                }
+            }
+        }
 
         // PUT: api/Recording/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] Metric[] value)
+        public async void Put(int id, [FromBody] Metric[] value)
         {
-            var i = value.Length;
+            using (var db = new BreathRateRecognitionContext())
+            {
+                var r = db.Recordings.FirstOrDefault(o => o.Id == id);
+
+                if (r != null)
+                {
+                    foreach (var m in value)
+                    {
+                        db.RecordingMetrics.Add(new RecordingMetric() { Name = m.Name, Port = m.Port, Value = m.Value, Timestamp = m.Timestamp, Recording = r });
+                    }
+
+                    await db.SaveChangesAsync();
+                }
+            }
         }
 
         //// DELETE: api/ApiWithActions/5
-        //[HttpDelete("{id}")]
-        //public void Delete(int id)
-        //{
-        //}
+        [HttpDelete("{id}")]
+        public async void Delete(int id)
+        {
+            using (var db = new BreathRateRecognitionContext())
+            {
+                var r = db.Recordings.FirstOrDefault(o => o.Id == id);
+
+                if (r != null)
+                {
+                    db.Remove(r);
+                    await db.SaveChangesAsync();
+                }
+            }
+        }
     }
 }

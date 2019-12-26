@@ -35,7 +35,6 @@ namespace Server.Measurement
         {
             this.Tasks = SerialPort.GetPortNames()?.ToList().ConvertAll<Action>(port => () =>
             {
-
                 var sp = new SerialPort(port, 115200);
                 sp.Open();
                 Console.WriteLine($"Reading Data from Port:{port}");
