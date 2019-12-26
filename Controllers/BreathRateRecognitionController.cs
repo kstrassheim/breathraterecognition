@@ -21,9 +21,10 @@ namespace BreathRateRecognition.Server.Controllers
 
         // POST: api/CapSignal
         [HttpPost]
-        public void Post([FromBody] Metric signal)
+        public void Post([FromBody] Metric measurement)
         {
-            var i = signal?.Name;
+            var i = measurement?.Value;
         }
+
     }
 }

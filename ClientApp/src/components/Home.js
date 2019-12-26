@@ -9,6 +9,26 @@ export class Home extends Component {
     buffer = [];
     bufferSize = 5;
 
+    constructor(props) {
+        super(props);
+        this.state = { recordingId: 0 };
+        this.btnRecord_clicked = this.btnRecord_clicked.bind(this);
+    }
+
+    async btnRecord_clicked() {
+        if (this.state.recordingId) {
+            // stop recording
+            this.setState({ recordingId: 0 });
+        }
+        else {
+            var recording = await (await fetch('/api/Recording/0')).json();
+            if (recording && recording.id > 0) {
+                this.setState({ recordingId: recording.id });
+            }
+        }
+        
+    }
+
     componentDidMount = () => {
         //this.initChart('Server');
         const hubConnection = new signalR.HubConnectionBuilder()
@@ -29,6 +49,18 @@ export class Home extends Component {
         return color;
     }
 
+    async saveMetrics(metrics) {
+        if (this.state.recordingId > 0) {
+            fetch(`/api/Recording/${this.state.recordingId}`,
+                {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(metrics)
+                }
+            );
+        }
+    }
+
     addData(metric) {
 
         this.buffer.push(metric);
@@ -42,7 +74,7 @@ export class Home extends Component {
             }
 
             // get dataset
-            var dsa = this.chart.data.datasets.length > 0 ? this.chart.data.datasets.filter((d) => d.label == first.port) : null;
+            var dsa = this.chart.data.datasets.length > 0 ? this.chart.data.datasets.filter((d) => d.label === first.port) : null;
             var ds = dsa && dsa.length > 0 ? dsa[0] : null;
             if (!ds) {
                 ds = {
@@ -55,14 +87,16 @@ export class Home extends Component {
             }
 
             // insert new values
-            if (this.chart.options.title.text == first.name) {
+            if (this.chart.options.title.text === first.name) {
                 for (var i = 0; i < this.buffer.length; i++) {
                     ds.data.push({ x: this.buffer[i].timestamp, y: this.buffer[i].value });
                 }
+
+                this.saveMetrics(this.buffer);
             }
 
             // delete old values if expired
-            if (moment.duration(moment().diff(ds.data[0].x)).asSeconds() > 60) { ds.data.splice(0, this.buffer.length); }
+            if (moment.duration(moment().diff(ds.data[0].x)).asSeconds() > 10) { ds.data.splice(0, this.buffer.length); }
 
             this.chart.update();
 
@@ -122,10 +156,14 @@ export class Home extends Component {
         });
     }
 
+
     render () {
     return (
         <div>
             <h1>Breath rate recognition</h1>
+            <div>
+                <input id="btnRecord" type="button" onClick={this.btnRecord_clicked} className="btn btn-outline-danger" value={(this.state.recordingId > 0 ? 'Stop' : 'Start')} />
+            </div>
             <canvas id="measurementChart"></canvas>
         </div>
     );
