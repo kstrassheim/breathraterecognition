@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Http.OData;
 using BreathRateRecognition.Model;
 using BreathRateRecognition.Model.DB;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BreathRateRecognition.Controllers
 {
@@ -16,17 +16,17 @@ namespace BreathRateRecognition.Controllers
     {
         // GET: api/Recording/GetNewId
         [HttpGet]
-        [EnableQuery]
-        public async Task<IQueryable<Recording>> Get()
+        public IEnumerable<Recording> Get()
         {
             using (var db = new BreathRateRecognitionContext())
             {
-                return db.Recordings;
+                return db.Recordings.ToArray();
             }
         }
 
         // GET: api/Recording/5
         [HttpGet("{id}", Name = "Get")]
+
         public async Task<Recording> Get(int id)
         {
             using (var db = new BreathRateRecognitionContext())
@@ -36,11 +36,15 @@ namespace BreathRateRecognition.Controllers
                     var r = new Recording();
                     db.Recordings.Add(r);
                     await db.SaveChangesAsync();
+                    r.Name = r.Id.ToString();
+                    db.Attach(r);
+                    db.Entry(r).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                    await db.SaveChangesAsync();
                     return r;
                 }
                 else
                 {
-                    return db.Recordings.FirstOrDefault(o => o.Id == id);
+                    return db.Recordings.Include("RecordingMetrics").FirstOrDefault(o => o.Id == id);
                 }
             }
         }
