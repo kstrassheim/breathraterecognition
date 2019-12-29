@@ -17,7 +17,7 @@ export class Recordings extends Component {
 
     async componentDidMount() {
         var recordings = await (await fetch('/api/Recording')).json();
-        if (recordings.length > 0) {
+        if (recordings && recordings.length > 0) {
             await this.loadRecording(recordings[0].id);
             this.setState({ recordings: recordings })
         }
@@ -114,7 +114,7 @@ export class Recordings extends Component {
         if (this.chart) {
             this.chart.destroy();
         }
-        this.chart = new Chart(document.getElementById('measurementChart'), {
+        this.chart = new Chart(document.getElementById('recordingChart'), {
             type: 'line',
             data: {
                 datasets: [{
@@ -220,7 +220,7 @@ export class Recordings extends Component {
                     <option value={r.id} key={'rec' + r.id}>{r.name}</option>
                 )}
             </select>
-            <canvas id="measurementChart" onPointerUp={this.onpointerup} onPointerDown={this.onpointerdown}></canvas>
+            <canvas id="recordingChart" onPointerUp={this.onpointerup} onPointerDown={this.onpointerdown}></canvas>
         </div>
     );
   }
