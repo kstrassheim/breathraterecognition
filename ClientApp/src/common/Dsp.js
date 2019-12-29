@@ -1,5 +1,7 @@
 ﻿import React, { Component } from 'react';
 import moment from 'moment';
+import { SignalChart } from '../common/SignalChart';
+import { StackedBuffer } from '../services/stackedbuffer';
 import { Dsp as SvcDsp } from '../services/dsp';
 
 export class Dsp extends Component {
@@ -7,22 +9,28 @@ export class Dsp extends Component {
     constructor(props) {
         super(props);
         this.dsp = new SvcDsp(this.onDspResult.bind(this));
+        this.processBuffer = new StackedBuffer(SvcDsp.bufferSize, this.onProcessBufferPop.bind(this));
         this.state = { result: this.dsp.result };
+        this.signalChart = React.createRef();
     }
 
-    process(values) {
+    process(value) {
+        this.processBuffer.push(value);
+    }
+
+    onProcessBufferPop(values) {
+        if (this.pauseButton.current.paused()) { return; }
         this.dsp.process(values);
     }
 
-
     onDspResult(result) {
-        this.setState({ result: result});
+        this.setState({ result: result });
     }
-
 
     render() {
         return (
             <article>
+                <SignalChart ref={this.signalChart} name="signalChart" title="Processed Signal" expiration={60} />
                 <section>
                     <h3>Signal Rate</h3>
                     <div>
