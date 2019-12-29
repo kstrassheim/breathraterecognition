@@ -13,11 +13,11 @@ namespace BreathRateRecognition.Server.Controllers
     [ApiController]
     public class BreathRateRecognitionController : ControllerBase
     {
-        [HttpGet]
-        public string Get()
-        {
-            return "Hello World";
-        }
+        //[HttpGet]
+        //public string Get()
+        //{
+        //    return "Hello World";
+        //}
 
         // POST: api/CapSignal
         [HttpPost]

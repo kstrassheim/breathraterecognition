@@ -25,8 +25,7 @@ namespace BreathRateRecognition.Controllers
         }
 
         // GET: api/Recording/5
-        [HttpGet("{id}", Name = "Get")]
-
+        [HttpGet("{id}", Name = "GetRecording")]
         public async Task<Recording> Get(int id)
         {
             using (var db = new BreathRateRecognitionContext())
@@ -44,7 +43,7 @@ namespace BreathRateRecognition.Controllers
                 }
                 else
                 {
-                    return db.Recordings.Include("RecordingMetrics").FirstOrDefault(o => o.Id == id);
+                    return db.Recordings.Include("RecordingMetrics").Include("Trainings").FirstOrDefault(o => o.Id == id);
                 }
             }
         }

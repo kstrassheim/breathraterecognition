@@ -26,7 +26,6 @@ export class Home extends Component {
                 this.setState({ recordingId: recording.id });
             }
         }
-        
     }
 
     componentDidMount = () => {

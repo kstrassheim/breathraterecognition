@@ -43,9 +43,36 @@ namespace BreathRateRecognition.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Trainings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Port = table.Column<string>(nullable: true),
+                    Start = table.Column<DateTime>(nullable: false),
+                    End = table.Column<DateTime>(nullable: false),
+                    RecordingId = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Trainings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Trainings_Recordings_RecordingId",
+                        column: x => x.RecordingId,
+                        principalTable: "Recordings",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_RecordingMetrics_RecordingId",
                 table: "RecordingMetrics",
+                column: "RecordingId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Trainings_RecordingId",
+                table: "Trainings",
                 column: "RecordingId");
         }
 
@@ -53,6 +80,9 @@ namespace BreathRateRecognition.Migrations
         {
             migrationBuilder.DropTable(
                 name: "RecordingMetrics");
+
+            migrationBuilder.DropTable(
+                name: "Trainings");
 
             migrationBuilder.DropTable(
                 name: "Recordings");

@@ -13,5 +13,7 @@ namespace BreathRateRecognition.Model.DB
         public DbSet<Recording> Recordings { get; set; }
 
         public DbSet<RecordingMetric> RecordingMetrics { get; set; }
+
+        public DbSet<Training> Trainings { get; set; }
     }
 }

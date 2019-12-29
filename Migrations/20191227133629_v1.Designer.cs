@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BreathRateRecognition.Migrations
 {
     [DbContext(typeof(BreathRateRecognitionContext))]
-    [Migration("20191226200005_v1")]
+    [Migration("20191227133629_v1")]
     partial class v1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -62,10 +62,44 @@ namespace BreathRateRecognition.Migrations
                     b.ToTable("RecordingMetrics");
                 });
 
+            modelBuilder.Entity("BreathRateRecognition.Model.DB.Training", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("End")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Port")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("RecordingId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("Start")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecordingId");
+
+                    b.ToTable("Trainings");
+                });
+
             modelBuilder.Entity("BreathRateRecognition.Model.DB.RecordingMetric", b =>
                 {
                     b.HasOne("BreathRateRecognition.Model.DB.Recording", "Recording")
                         .WithMany("RecordingMetrics")
+                        .HasForeignKey("RecordingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("BreathRateRecognition.Model.DB.Training", b =>
+                {
+                    b.HasOne("BreathRateRecognition.Model.DB.Recording", "Recording")
+                        .WithMany("Trainings")
                         .HasForeignKey("RecordingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
