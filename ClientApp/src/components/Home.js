@@ -32,7 +32,8 @@ export class Home extends Component {
 
     onLowPassBufferPop(values) {
         if (this.pauseButton.current.paused()) { return; }
-        this.lowPassSignalChart.current.process(values);
+        this.rawSignalChart.current.process(values);
+        //this.lowPassSignalChart.current.process(values);
         //this.dsp.process(values);
     }
 
@@ -43,7 +44,10 @@ export class Home extends Component {
     componentWillUnmount() {
         this.signalApi.disconnect();
         this.inputBuffer.clear();
-        this.processBuffer.clear();
+    }
+
+    sliderChange(evt) {
+
     }
 
     render () {
@@ -53,9 +57,9 @@ export class Home extends Component {
             <div className="btn-group">
                 <RecordButton ref={this.recordButton} />
                 <PauseButton ref={this.pauseButton} />
+                <input type="range" class="custom-range" min="0" max="255" id="customRange2" onChange={this.sliderChange} />
             </div>
-            <SignalChart ref={this.rawSignalChart} name="rawSignalChart" title="Raw Signal" expiration={60} />
-            <SignalChart ref={this.lowPassSignalChart} name="lowPassSignalChart" title="Low Pass Signal" expiration={60} />
+            <SignalChart ref={this.rawSignalChart} name="rawSignalChart" title="Raw Signal" expiration={30} />
             <Dsp ref={this.dsp} />
         </main>
     );
