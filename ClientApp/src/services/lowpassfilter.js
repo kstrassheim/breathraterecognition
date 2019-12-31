@@ -2,8 +2,7 @@
 
     portSuffix = "LP";
 
-    constructor(bufferLength, degree, popCallback) {
-        this.bufferLength = bufferLength;
+    constructor(degree, popCallback) {
         this.degree = degree;
         this.buffer = [];
         this.popCallback = popCallback;
@@ -13,8 +12,8 @@
         this.buffer.push(val);
         if (this.buffer.length > 1 && this.popCallback) {
             this.popCallback(this.lowPass(this.buffer));
-            if (this.buffer.length > this.bufferLength) {
-                this.buffer.splice(0, this.buffer.length - this.bufferLength);
+            if (this.buffer.length > this.degree) {
+                this.buffer.splice(0, this.buffer.length - this.degree);
             }
         }
     }
@@ -25,8 +24,8 @@
         for (var i = 1; i < values.length; ++i) {
             value += (values[i].value - value) / this.degree;
         }
-
-        let ret = Object.assign({}, values[values.length - 1]);
+        // get centered array value
+        let ret = Object.assign({}, values[Math.floor(values.length / 2)]);
         ret.port = ret.port + this.portSuffix;
         ret.value = value;
         return ret;

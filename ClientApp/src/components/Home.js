@@ -15,7 +15,7 @@ export class Home extends Component {
         this.inputBuffer = new StackedBuffer(Home.bufferSize, this.onInputBufferPop.bind(this));
         this.demoBuffer = new StackedBuffer(Home.bufferSize, this.onDemoInputBufferPop.bind(this));
         this.lowPassBuffer = new StackedBuffer(Home.bufferSize, this.onLowPassBufferPop.bind(this));
-        this.lowPassFilter = new LowPassFilter(64, 24, this.lowPassBuffer.push.bind(this.lowPassBuffer));
+        this.lowPassFilter = new LowPassFilter(8, this.lowPassBuffer.push.bind(this.lowPassBuffer));
         this.signalApi = new SignalApi([this.inputBuffer.push.bind(this.inputBuffer), this.lowPassFilter.push.bind(this.lowPassFilter)]);
         this.demoApi = new DemoApi([this.demoBuffer.push.bind(this.demoBuffer), this.lowPassFilter.push.bind(this.lowPassFilter)])
 

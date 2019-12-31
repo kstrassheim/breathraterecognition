@@ -1,6 +1,6 @@
 {
   "short_name": "BreathRateRecognition.Server",
-  "name": "BreathRateRecognition.Server",
+  "name": "BRR",
   "icons": [
     {
       "src": "favicon.ico",
