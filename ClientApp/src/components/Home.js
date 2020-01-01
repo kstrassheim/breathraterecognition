@@ -42,10 +42,10 @@ export class Home extends Component {
     onLowPassBufferPop(values) {
         if (this.pauseButton.current.paused()) { return; }
         this.rawSignalChart.current.process(values);
-        //this.dsp.process(values);
+        this.dsp.current.process(values);
     }
 
-    componentWillMount() {
+    componentDidMount() {
         this.signalApi.connect();
         this.demoApi.connect();
     }
