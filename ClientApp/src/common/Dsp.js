@@ -28,7 +28,7 @@ export class Dsp extends Component {
                 <section>
                     <h3>Signal Rate</h3>
                     <div>
-                        <label>Avg Signal Distance:</label><span>{Math.round(this.state.result.avgSignalDistance * 100) / 100}s</span>
+                        <label>Avg Signal Period:</label><span>{this.state.result.avgSignalPeriod}s</span>
                     </div>
                     <div>
                         <label>Base Freqency:</label><span>{this.state.result.baseFrequency.re}Hz - {this.state.result.baseFrequency.im}A</span>

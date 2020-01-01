@@ -13,7 +13,13 @@ export class Dsp {
         this.stft = shortTimeFT(1, this.bufferSize, this.onFreq);
         this.istft = shortTimeFT(-1, this.bufferSize, this.onTime);
         this.onResultCallback = onResultCallback;
-        this.resetResult();
+        this.result = {
+            avgSignalPeriod:0.0,
+            baseFrequency: { re: 0, im: 0 },
+            input: [],
+            times: [],
+            frequencies: []
+        };
     }
 
     process(values) {
@@ -30,32 +36,21 @@ export class Dsp {
 
     onProcessBufferPop(values) { this.processDsp(values); }
 
-    resetResult() {
-        this.result = {
-            avgSignalDistance: 0,
-            baseFrequency: { re: 0, im: 0 },
-            input: [],
-            times: [],
-            frequencies: []
-        };
-    }
-
-    getAvgDistanceFromValues(values) {
-        return values.reduce((p, c, i, a) => p + (i > 0 ? moment.duration(moment(c.timestamp).diff(moment(a[i - 1].timestamp))).asSeconds() : 0), 0) / ((values.length || 2) - 1);
-    }
-
     processDsp(values) {
         this.stft(new Float32Array(values.map(v => v.value)));
         this.result.input = values.map(o=>o.value);
         this.result.times = values.map(o =>o.timestamp);
-        this.result.avgSignalDistance = this.getAvgDistanceFromValues(values);
+        this.result.avgSignalPeriod = values.reduce((p, c, i, a) => p + (i > 0 ? moment.duration(moment(c.timestamp).diff(moment(a[i - 1].timestamp))).asSeconds() : 0), 0) / ((values.length || 2) - 1);
     }
 
     onFreq(re, im) {
         //this.istft(re, im);
+        this.result.frequencies = [];
+        // not possible with map and float32 array
         for (let i = 0; i < re.length; i++) {
-            this.result.frequencies.push({ re: Math.abs(re[i]), im: im[i] });
+            this.result.frequencies.push({ re: re[i], im: im[i] });
         }
+
         this.returnResult();
         
     }
@@ -72,7 +67,5 @@ export class Dsp {
         if (this.onResultCallback) {
             this.onResultCallback(this.result);
         }
-
-        this.resetResult();
     }
 }
