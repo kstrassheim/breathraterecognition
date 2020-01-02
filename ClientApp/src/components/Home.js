@@ -15,7 +15,7 @@ export class Home extends Component {
         this.inputBuffer = new StackedBuffer(Home.bufferSize, this.onInputBufferPop.bind(this));
         this.demoBuffer = new StackedBuffer(Home.bufferSize, this.onDemoInputBufferPop.bind(this));
         this.lowPassBuffer = new StackedBuffer(Home.bufferSize, this.onLowPassBufferPop.bind(this));
-        this.lowPassFilter = new LowPassFilter(8, this.lowPassBuffer.push.bind(this.lowPassBuffer));
+        this.lowPassFilter = new LowPassFilter(16, this.lowPassBuffer.push.bind(this.lowPassBuffer));
         this.signalApi = new SignalApi([this.inputBuffer.push.bind(this.inputBuffer), this.lowPassFilter.push.bind(this.lowPassFilter)]);
         this.demoApi = new DemoApi([this.demoBuffer.push.bind(this.demoBuffer), this.lowPassFilter.push.bind(this.lowPassFilter)])
 
@@ -67,7 +67,6 @@ export class Home extends Component {
             <div className="btn-group">
                 <RecordButton ref={this.recordButton} />
                 <PauseButton ref={this.pauseButton} />
-                <input type="range" className="custom-range" min="0" max="255" id="customRange2" onChange={this.sliderChange} />
             </div>
             <SignalChart ref={this.rawSignalChart} name="rawSignalChart" title="Raw Signal" expiration={30} />
             <Dsp ref={this.dsp} />

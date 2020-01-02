@@ -1,25 +1,12 @@
 ﻿import moment from 'moment';
-import { StackedBuffer } from '../services/stackedbuffer';
-import shortTimeFT from 'stft';
+import { TimedBuffer } from '../services/timedbuffer';
 
 export class Dsp {
-
-    bufferSize = 64;
+    toleranceSec = 0.5;
 
     constructor(onResultCallback) {
-        this.processBuffer = new StackedBuffer(this.bufferSize, this.onProcessBufferPop.bind(this));
-        this.onFreq = this.onFreq.bind(this);
-        this.onTime = this.onTime.bind(this);
-        this.stft = shortTimeFT(1, this.bufferSize, this.onFreq);
-        this.istft = shortTimeFT(-1, this.bufferSize, this.onTime);
+        this.processBuffer = new TimedBuffer(10, this.onProcessBufferPop.bind(this));
         this.onResultCallback = onResultCallback;
-        this.result = {
-            avgSignalPeriod:0.0,
-            baseFrequency: { re: 0, im: 0 },
-            input: [],
-            times: [],
-            frequencies: []
-        };
     }
 
     process(values) {
@@ -36,36 +23,50 @@ export class Dsp {
 
     onProcessBufferPop(values) { this.processDsp(values); }
 
-    processDsp(values) {
-        this.stft(new Float32Array(values.map(v => v.value)));
-        this.result.input = values.map(o=>o.value);
-        this.result.times = values.map(o =>o.timestamp);
-        this.result.avgSignalPeriod = values.reduce((p, c, i, a) => p + (i > 0 ? moment.duration(moment(c.timestamp).diff(moment(a[i - 1].timestamp))).asSeconds() : 0), 0) / ((values.length || 2) - 1);
+    getAvgValue(values) {
+        let avg = 0;
+        for (let i = 0; i < values.length; i++) { avg += values[i].value; }
+        return avg / values.length;
     }
 
-    onFreq(re, im) {
-        //this.istft(re, im);
-        this.result.frequencies = [];
-        // not possible with map and float32 array
-        for (let i = 0; i < re.length; i++) {
-            this.result.frequencies.push({ re: re[i], im: im[i] });
+    processDsp(values) {
+        if (!values && values.length < 1) { return; }
+        let avg = this.getAvgValue(values);
+        let v = values[0].value - avg;
+        let pick = null;
+        for (let i = 1; i < values.length; i++) {
+            if (Math.sign(values[i].value - avg) !== Math.sign(v)) {
+                if (!pick) {
+                    console.log(`first pick - sign ${Math.sign(values[i].value - avg)} - cmp sign ${Math.sign(v)} - val ${values[i].value} - v ${v} - avg ${avg} on ${i} of  ${values.length}`, values[i]);
+                    pick = values[i];
+                    v = pick.value - avg;
+                }
+                else {
+                    var ret = moment.duration(moment(values[i].timestamp).diff(moment(pick.timestamp))).asSeconds();
+                    if (ret > this.toleranceSec) {
+                        console.log(`second pick - sign ${Math.sign(values[i].value - avg)} - cmp sign ${Math.sign(v)} - val ${values[i].value} - v ${v} - avg ${avg} on ${i} of  ${values.length}`, values[i]);
+                        let ret = Object.assign({}, values[i]);
+                        ret.avgValue = avg;
+                        ret.period = moment.duration(moment(values[i].timestamp).diff(moment(pick.timestamp))).asSeconds();
+                        ret.frequency = 1 / ret.period;
+                        ret.frequencyPerMinute = ret.frequency * 60;
+
+                        if (this.onResultCallback) {
+                            this.onResultCallback(ret);
+                        }
+
+                        return ret;
+                    }
+                    else {
+                        console.log(`invalid second pick - sign ${Math.sign(values[i].value - avg)} - cmp sign ${Math.sign(v)} - val ${values[i].value} - v ${v}  - avg ${avg} on ${i} of  ${values.length}`, values[i]);
+                    }
+                }
+            }
         }
 
-        this.returnResult();
-        
-    }
-
-    onTime(v) {
-        //this.result.frequencies = v;
-    }
-
-    returnResult() {
-        // set base frequncy
-        this.result.frequencies = this.result.frequencies.sort((a, b) => Math.abs(a.re) - Math.abs(b.re));
-        this.result.baseFrequency = this.result.frequencies[0];
-
+        // else return invalid
         if (this.onResultCallback) {
-            this.onResultCallback(this.result);
+            this.onResultCallback(null);
         }
     }
 }

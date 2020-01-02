@@ -3,7 +3,6 @@ import Chart from 'chart.js';
 import moment from 'moment';
 
 class LineChart extends Component {
-    
     chart = null;
     props = null;
 
@@ -74,7 +73,6 @@ export class SignalChart extends LineChart {
 
     process(values) {
         let first = values[0];
-
         // get dataset
         let dsa = this.chart.data.datasets.length > 0 ? this.chart.data.datasets.filter((d) => d.label === first.port) : null;
         let ds = dsa && dsa.length > 0 ? dsa[0] : null;
@@ -89,7 +87,7 @@ export class SignalChart extends LineChart {
         }
 
         // insert new values
-        values.forEach(o => ds.data.push({ x: o.timestamp, y: o.value }));
+        values.forEach(o => ds.data.push({ x: o.timestamp, y: o[this.props.valuePropertyName || 'value']}));
 
         // delete old values if expired
         if (ds.data.length > 0 && moment.duration(moment().diff(ds.data[0].x)).asSeconds() > (this.props.expiration || this.defaultExpiration)) { ds.data.splice(0, values.length); }
