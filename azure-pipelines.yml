@@ -24,11 +24,23 @@ steps:
 - task: DotNetCoreCLI@2
   inputs:
     command: 'publish'
-    arguments: ' --configuration $(buildConfiguration) -r win-x64 --self-contained true --output $(build.artifactstagingdirectory)'
+    arguments: ' --configuration $(buildConfiguration) -r win-x64 --self-contained true --output $(build.artifactstagingdirectory)/win-x64'
+    publishWebProjects: true
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    arguments: ' --configuration $(buildConfiguration) -r linux-arm --self-contained true --output $(build.artifactstagingdirectory)/linux-arm'
     publishWebProjects: true
 
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: '$(Pipeline.Workspace)'
-    artifact: 'BreathRateRecognition'
+    targetPath: '$(build.artifactstagingdirectory)/win-x64'
+    artifact: 'win-x64'
+    publishLocation: 'pipeline'
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: '$(build.artifactstagingdirectory)/linux-arm'
+    artifact: 'linux-arm'
     publishLocation: 'pipeline'
