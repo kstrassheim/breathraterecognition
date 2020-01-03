@@ -21,9 +21,13 @@ namespace Server.Measurement
 
         private readonly string AppName = System.Environment.MachineName;
         public IHubContext<MeasurementDistributionHub> HubContext;
-       
-        private List<Task> Tasks = null;
-        private List<CancellationTokenSource> CancelTokenSources = new List<CancellationTokenSource>();
+
+        private Task mainTask = null;
+        private CancellationTokenSource mainTaskCancel = new CancellationTokenSource();
+        private Dictionary<string, Task> Tasks = new Dictionary<string,Task>();
+        private Dictionary<string, CancellationTokenSource> CancelTokenSources = new Dictionary<string, CancellationTokenSource>();
+
+        private List<SerialPort> ports = new List<SerialPort>();
 
         public void Dispose()
         {
@@ -33,48 +37,102 @@ namespace Server.Measurement
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            this.Tasks = SerialPort.GetPortNames()?.ToList().ConvertAll<Action>(port => () =>
+            this.mainTask = new Task(() =>
             {
-                var sp = new SerialPort(port, 115200);
-                sp.Open();
-                Console.WriteLine($"Reading Data from Port:{port}");
                 while (true)
                 {
-                    int val = 0;
-                    var line = sp.ReadLine()?.Split(',');
-                    if (line != null && line.Length > 3 && int.TryParse(line?[4], out val))
+                    lock (this.ports)
                     {
-                        var m = new Metric()
+                        lock(this.Tasks)
                         {
-                            Name = AppName,
-                            Port = port,
-                            Value = val,
-                            Timestamp = DateTime.Now
-                        };
+                            var pns = SerialPort.GetPortNames();
 
-                        this.HubContext.Clients.All.SendAsync("measurement", m);
+                            foreach (var n in pns)
+                            {
+                                var p = this.ports.FirstOrDefault(sp => sp.PortName == n);
+                                if (p == null)
+                                {
+                                    p = new SerialPort(n, 115200);
+                                }
+
+                                this.ports.Add(p);
+
+                                if (!this.Tasks.ContainsKey(n) || this.Tasks[n].Status != TaskStatus.Running)
+                                {
+                                    if (!this.CancelTokenSources.ContainsKey(n))
+                                    {
+                                        this.CancelTokenSources.Add(n, new CancellationTokenSource());
+                                    }
+                                    else
+                                    {
+                                        this.CancelTokenSources[n] = new CancellationTokenSource();
+                                    }
+                                    
+                                    var t = new Task((a) => {
+                                        if (!p.IsOpen)
+                                        {
+                                            p.Open();
+                                        }
+
+                                        if (p.IsOpen)
+                                        {
+                                            Console.WriteLine($"Opened Port:{p.PortName}");
+                                        }
+
+                                        while (p.IsOpen)
+                                        {
+                                            int val = 0;
+                                            var line = p.ReadLine()?.Split(',');
+                                            if (line != null && line.Length > 0)
+                                            {
+                                                for (var i = 0; i < line.Length; i++)
+                                                {
+                                                    if (int.TryParse(line?[i], out val) && val != 0)
+                                                    {
+                                                        this.HubContext.Clients.All.SendAsync("measurement", new Metric()
+                                                        {
+                                                            Name = AppName,
+                                                            Port = $"{p.PortName}_{i}",
+                                                            Value = val,
+                                                            Timestamp = DateTime.Now
+                                                        });
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }, this.CancelTokenSources[n]);
+
+                                    if (this.Tasks.ContainsKey(n))
+                                    {
+                                        this.Tasks[n] = t;
+                                    }
+                                    else
+                                    {
+                                        this.Tasks.Add(n, t);
+                                    }
+                                    
+                                    t.Start();
+                                }
+                            }
+                        }
                     }
-                    //else
-                    //{
-                    //    // exit task if there are unparseable values
-                    //    break;
-                    //}
-                }
-            }).ConvertAll<Task>(a =>
-            {
-                var cancellationTokenSource = new CancellationTokenSource();
-                this.CancelTokenSources.Add(cancellationTokenSource);
-                return new Task(a, cancellationTokenSource.Token);
-            });
 
-            // select all running ports
-            this.Tasks?.ForEach(t => t.Start());
+                    Task.Delay(5000).Wait();
+                }
+            }, this.mainTaskCancel.Token);
+
+            this.mainTask.Start();
+            
             return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            return new Task(() => this.CancelTokenSources.ForEach(ct => ct.Cancel()));
+            return new Task(() =>
+            {
+                this.mainTaskCancel.Cancel();
+                this.CancelTokenSources.Values.ToList().ForEach(ct => ct.Cancel());
+            });
         }
     }
 }
