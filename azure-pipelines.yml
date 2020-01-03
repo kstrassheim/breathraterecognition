@@ -26,3 +26,9 @@ steps:
     command: 'publish'
     arguments: ' --configuration $(buildConfiguration) -r win-x64 --self-contained true --output $(build.artifactstagingdirectory)'
     publishWebProjects: true
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: '$(Pipeline.Workspace)'
+    artifact: 'BreathRateRecognition'
+    publishLocation: 'pipeline'
