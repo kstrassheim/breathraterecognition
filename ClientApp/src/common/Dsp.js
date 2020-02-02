@@ -7,7 +7,6 @@ export class Dsp extends Component {
 
     constructor(props) {
         super(props);
-        
         this.dsp = new SvcDsp(this.onDspResult.bind(this), this.props.onDspSelect, this.props.onDspAvgSelect);
         this.state = { result: this.dsp.result };
         this.signalChart = React.createRef();
@@ -15,6 +14,12 @@ export class Dsp extends Component {
 
     process(values) {
         this.dsp.process(values);
+    }
+
+    reset() {
+        this.signalChart.current.reset();
+        this.dsp.reset();
+        this.setState({result: this.dsp.result });
     }
 
 
@@ -28,7 +33,7 @@ export class Dsp extends Component {
     render() {
         return (
             <article>
-                <SignalChart ref={this.signalChart} name="signalChart" title="Frequency" valuePropertyName={'frequencyPerMinute'} expiration={3600} />
+                <SignalChart ref={this.signalChart} name="signalChart" title="Breath rate" valuePropertyName={'frequencyPerMinute'} expiration={3600} />
                 <section>
                     <h3>Signal Rate</h3>
                     {

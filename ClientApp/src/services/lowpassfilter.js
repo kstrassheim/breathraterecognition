@@ -1,6 +1,6 @@
 ﻿export class LowPassFilter {
 
-    portSuffix = "LP";
+    portSuffix = "LowPass";
 
     constructor(degree, popCallback) {
         this.degree = degree;

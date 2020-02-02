@@ -11,6 +11,10 @@ export class Dsp {
         this.onSelectAvgCallback = onSelectAvgCallback;
     }
 
+    reset() {
+        this.processBuffer.clear();
+    }
+
     process(values) {
         // push one by one value
         if (Array.isArray(values)) {

@@ -59,4 +59,13 @@ export class FrequencyChart extends BarChart {
         
         this.chart.update();
     }
+
+    reset() {
+        this.clearAnnotations();
+        if (this.chart.data.datasets.length > 0) {
+            for (let i = 0; i < this.chart.data.datasets.length; i++) {
+                this.chart.data.datasets[i].data.splice(0, this.chart.data.datasets[0].data.length);
+            }
+        }
+    }
 }
