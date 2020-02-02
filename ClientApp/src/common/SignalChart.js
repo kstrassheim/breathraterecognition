@@ -103,6 +103,8 @@ export class SignalChart extends LineChart {
     }
 
     process(values) {
+        if (!Array.isArray(values)) { values = [values]; }
+        if (values.length < 1 || !values[0].port || !values[0].timestamp) { return; }
         let first = values[0];
         // get dataset
         let dsa = this.chart.data.datasets.length > 0 ? this.chart.data.datasets.filter((d) => d.label === first.port) : null;
@@ -132,7 +134,10 @@ export class SignalChart extends LineChart {
             for (let i = 0; i < this.chart.data.datasets.length; i++) {
                 this.chart.data.datasets[i].data.splice(0, this.chart.data.datasets[i].data.length);
             }
+            this.chart.data.datasets.splice(0, this.chart.data.datasets.length)
         }
+
+        this.chart.data.labels.splice(0, this.chart.data.labels.length);
         this.chart.update();
     }
 }

@@ -1,25 +1,26 @@
-﻿export class LowPassFilter {
+﻿import { StackedBuffer } from './stackedbuffer';
+export class LowPassFilter extends StackedBuffer {
 
-    portSuffix = "LowPass";
-
-    constructor(degree, popCallback) {
+    portSuffix = "_LowPass";
+    constructor(bufferLength, degree, popCallback) {
+        super(bufferLength, popCallback);
         this.degree = degree;
-        this.buffer = [];
-        this.popCallback = popCallback;
+        this.filterBuffer = [];
+        this.popCallback = popCallback ? (Array.isArray(popCallback) ? popCallback : [popCallback]) : [];
     }
 
     push(val) {
-        this.buffer.push(val);
-        if (this.buffer.length > 1 && this.popCallback) {
-            this.popCallback(this.lowPass(this.buffer));
-            if (this.buffer.length > this.degree) {
-                this.buffer.splice(0, this.buffer.length - this.degree);
-            }
+        if (this.paused || this.filterName && val && val.name !== this.filterName || this.filterPort && val && val.port !== this.filterPort) return;
+        this.filterBuffer.push(val);
+        let lpv = this.lowPass(this.filterBuffer);
+        super.push(lpv, true);
+
+        if (this.filterBuffer.length > this.degree) {
+            this.filterBuffer.splice(0, this.filterBuffer.length - this.degree);
         }
     }
 
     lowPass(values) {
-        
         let value = values[0].value; 
         for (var i = 1; i < values.length; ++i) {
             value += (values[i].value - value) / this.degree;
@@ -32,6 +33,7 @@
     }
 
     clear() {
-        this.buffer.splice(0, this.buffer.length);
+        super.clear();
+        this.filterBuffer.splice(0, this.filterBuffer.length);
     }
 }

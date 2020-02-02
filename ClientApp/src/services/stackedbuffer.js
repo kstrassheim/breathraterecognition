@@ -1,16 +1,21 @@
 ﻿
 export class StackedBuffer {
-
-    constructor(bufferSize, bufferPopCallback) {
+    paused = false;
+    filterName = '';
+    filterPort = '';
+    constructor(bufferSize, popCallback) {
         this.buffer = [];
         this.bufferSize = bufferSize;
-        this.bufferPopCallback = bufferPopCallback;
+        this.popCallback = popCallback ? (Array.isArray(popCallback) ? popCallback : [popCallback]) : [];
     }
 
-    push(val) {
+    push(val, ignoreFilter) {
+        if (!ignoreFilter && (this.paused || this.filterName && val && val.name !== this.filterName || this.filterPort && val && val.port !== this.filterPort)) return;
         this.buffer.push(val);
-        if (this.buffer.length >= this.bufferSize && this.bufferPopCallback) {
-            this.bufferPopCallback(this.buffer);
+        if (this.buffer.length >= this.bufferSize) {
+            for (let i = 0; i < this.popCallback.length; i++) {
+                this.popCallback[i](this.buffer);
+            }
             this.clear();
         }
     }

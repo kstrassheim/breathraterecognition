@@ -17,15 +17,14 @@ export class Dsp extends Component {
     }
 
     reset() {
-        this.signalChart.current.reset();
         this.dsp.reset();
+        this.signalChart.current.reset();
         this.setState({result: this.dsp.result });
     }
 
-
     onDspResult(result) {
         this.setState({ result: result });
-        if (result) {
+        if (result && this.signalChart.current) {
             this.signalChart.current.process([result]);
         }
     }

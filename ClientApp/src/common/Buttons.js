@@ -11,11 +11,14 @@ export class RecordButton extends Component {
     }
 
     process(values) {
-        if (this.state.recordingId > 0) {
+        if (this.state.recordingId > 0 && values.length > 0 && values[0].name.toLowerCase() !== 'demo') {
             this.api.saveRecording(this.state.recordingId, values);
         }
     }
 
+    stop() {
+        this.setState({ recordingId: 0 });
+    }
 
     async btnRecord_clicked() {
         if (this.state.recordingId) {
@@ -51,6 +54,7 @@ export class PauseButton extends Component {
 
     btnPause_clicked() {
         this.setState({ pause: !this.state.pause });
+        if (this.props.onPauseChanged) { this.props.onPauseChanged(!this.state.pause); } 
     }
 
     render() {

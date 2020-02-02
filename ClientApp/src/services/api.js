@@ -62,6 +62,7 @@ export class DemoApi {
 
     active = false;
     demos = null;
+    demoHostName = 'Demo';
 
     constructor(onSignalCallbacks) {
         this.onSignalCallbacks = onSignalCallbacks;
@@ -85,6 +86,7 @@ export class DemoApi {
                 for (let i = 0; i < this.demos.length; i++) {
                     if (this.onSignalCallbacks) {
                         let o = Object.assign({}, this.demos[i]);
+                        o.name = this.demoHostName;
                         o.timestamp = new Date();
                         if (Array.isArray(this.onSignalCallbacks)) {
                             this.onSignalCallbacks.forEach(f => f(o));

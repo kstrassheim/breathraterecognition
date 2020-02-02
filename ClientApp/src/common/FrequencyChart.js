@@ -43,6 +43,7 @@ class BarChart extends Component {
 
 export class FrequencyChart extends BarChart {
     process(values) {
+        if (!Array.isArray(values)) { values = [values]; }
         this.chart.data.datasets.splice(0, this.chart.data.datasets.length);
         this.chart.data.labels.splice(0, this.chart.data.labels.length);
         this.chart.data.datasets.push({

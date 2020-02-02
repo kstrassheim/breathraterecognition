@@ -81,24 +81,29 @@ namespace Server.Measurement
 
                                         while (p.IsOpen)
                                         {
-                                            int val = 0;
-                                            var line = p.ReadLine()?.Split(',');
-                                            if (line != null && line.Length > 0)
+                                            try
                                             {
-                                                for (var i = 0; i < line.Length; i++)
+                                                int val = 0;
+                                                var line = p.ReadLine()?.Split(',');
+                                                if (line != null && line.Length > 0)
                                                 {
-                                                    if (int.TryParse(line?[i], out val) && val != 0)
+                                                    for (var i = 0; i < line.Length; i++)
                                                     {
-                                                        this.HubContext.Clients.All.SendAsync("measurement", new Metric()
+                                                        if (int.TryParse(line?[i], out val) && val != 0)
                                                         {
-                                                            Name = AppName,
-                                                            Port = $"{p.PortName}_{i}",
-                                                            Value = val,
-                                                            Timestamp = DateTime.Now
-                                                        });
+                                                            this.HubContext.Clients.All.SendAsync("measurement", new Metric()
+                                                            {
+                                                                Name = AppName,
+                                                                Port = $"{p.PortName}_{i}",
+                                                                Value = val,
+                                                                Timestamp = DateTime.Now
+                                                            });
+                                                        }
                                                     }
                                                 }
                                             }
+                                            catch { }
+                                           
                                         }
                                     }, this.CancelTokenSources[n]);
 
