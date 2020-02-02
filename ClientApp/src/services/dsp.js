@@ -4,9 +4,11 @@ import { TimedBuffer } from '../services/timedbuffer';
 export class Dsp {
     toleranceSec = 0.5;
 
-    constructor(onResultCallback) {
+    constructor(onResultCallback, onSelectCallback, onSelectAvgCallback) {
         this.processBuffer = new TimedBuffer(10, this.onProcessBufferPop.bind(this));
         this.onResultCallback = onResultCallback;
+        this.onSelectCallback = onSelectCallback;
+        this.onSelectAvgCallback = onSelectAvgCallback;
     }
 
     process(values) {
@@ -33,6 +35,7 @@ export class Dsp {
         if (!values && values.length < 1) { return; }
         let avg = this.getAvgValue(values);
         let v = values[0].value - avg;
+        if (this.onSelectAvgCallback) { this.onSelectAvgCallback(values[0].timestamp, avg, 1); }
         let pick = null;
         for (let i = 1; i < values.length; i++) {
             if (Math.sign(values[i].value - avg) !== Math.sign(v)) {
@@ -40,10 +43,12 @@ export class Dsp {
                     console.log(`first pick - sign ${Math.sign(values[i].value - avg)} - cmp sign ${Math.sign(v)} - val ${values[i].value} - v ${v} - avg ${avg} on ${i} of  ${values.length}`, values[i]);
                     pick = values[i];
                     v = pick.value - avg;
+                    if (this.onSelectCallback) { this.onSelectCallback(pick.timestamp, 2); }
                 }
                 else {
                     var ret = moment.duration(moment(values[i].timestamp).diff(moment(pick.timestamp))).asSeconds();
                     if (ret > this.toleranceSec) {
+                        if (this.onSelectCallback) { this.onSelectCallback(values[i].timestamp, 3); }
                         console.log(`second pick - sign ${Math.sign(values[i].value - avg)} - cmp sign ${Math.sign(v)} - val ${values[i].value} - v ${v} - avg ${avg} on ${i} of  ${values.length}`, values[i]);
                         let ret = Object.assign({}, values[i]);
                         ret.avgValue = avg;

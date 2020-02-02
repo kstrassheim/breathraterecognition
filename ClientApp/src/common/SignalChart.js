@@ -29,6 +29,9 @@ class LineChart extends Component {
                     display: true,
                     text: this.props.title || this.props.name
                 },
+                annotation: {
+                    annotations: []
+                },
                 responsive: true,
                 scales: {
                     xAxes: [{
@@ -70,6 +73,34 @@ class LineChart extends Component {
 
 export class SignalChart extends LineChart {
     defaultExpiration = 10;
+
+    addAnnotation(time, color) {
+        this.chart.options.annotation.annotations.push({
+            id: `${time}`,
+            scaleID: 'x-axis-0',
+            type: 'line',
+            mode: 'vertical',
+            value: time,
+            borderColor: color,
+            borderWidth: 1
+        });
+    }
+
+    addHorizontalAnnotation(time, value, color) {
+        this.chart.options.annotation.annotations.push({
+            id: `${time}_${value}`,
+            scaleID: 'y-axis-0',
+            type: 'line',
+            mode: 'horizontal',
+            value: value,
+            borderColor: color,
+            borderWidth: 1
+        });
+    }
+
+    clearAnnotations() {
+        this.chart.options.annotation.annotations.splice(0, this.chart.options.annotation.annotations.length);
+    }
 
     process(values) {
         let first = values[0];

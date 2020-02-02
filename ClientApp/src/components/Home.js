@@ -27,6 +27,16 @@ export class Home extends Component {
         this.dsp = React.createRef();
     }
 
+    onDspSelect(time, type) {
+        this.rawSignalChart.current.addAnnotation(time, type == 2 ? 'red' : 'green');
+    }
+
+    onDspAvgSelect(time, avg) {
+        this.rawSignalChart.current.clearAnnotations();
+        this.rawSignalChart.current.addHorizontalAnnotation(time, avg, 'orange');
+        this.rawSignalChart.current.addAnnotation(time, 'blue');
+    }
+
     onInputBufferPop(values) {
         if (this.pauseButton.current.paused()) { return; }
         this.demoApi.disconnect();
@@ -69,7 +79,7 @@ export class Home extends Component {
                 <PauseButton ref={this.pauseButton} />
             </div>
             <SignalChart ref={this.rawSignalChart} name="rawSignalChart" title="Raw Signal" expiration={30} />
-            <Dsp ref={this.dsp} />
+            <Dsp ref={this.dsp} onDspSelect={this.onDspSelect.bind(this)} onDspAvgSelect={this.onDspAvgSelect.bind(this)} />
         </main>
     );
   }

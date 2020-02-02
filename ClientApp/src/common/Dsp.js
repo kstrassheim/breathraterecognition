@@ -7,7 +7,8 @@ export class Dsp extends Component {
 
     constructor(props) {
         super(props);
-        this.dsp = new SvcDsp(this.onDspResult.bind(this));
+        
+        this.dsp = new SvcDsp(this.onDspResult.bind(this), this.props.onDspSelect, this.props.onDspAvgSelect);
         this.state = { result: this.dsp.result };
         this.signalChart = React.createRef();
     }
@@ -15,6 +16,7 @@ export class Dsp extends Component {
     process(values) {
         this.dsp.process(values);
     }
+
 
     onDspResult(result) {
         this.setState({ result: result });
