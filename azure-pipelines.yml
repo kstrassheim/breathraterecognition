@@ -28,6 +28,29 @@ steps:
     arguments: ' --configuration $(buildConfiguration) -r win-x64 --self-contained true --output $(build.artifactstagingdirectory)/win-x64/BreathRateRecognition.zip'
     zipAfterPublish: true
     publishWebProjects: true
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    projects: '**/BreathRateRecognition.csproj'
+    arguments: ' --configuration $(buildConfiguration) -r win-x32--self-contained true --output $(build.artifactstagingdirectory)/win-x32/BreathRateRecognition.zip'
+    zipAfterPublish: true
+    publishWebProjects: true
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    projects: '**/BreathRateRecognition.csproj'
+    arguments: ' --configuration $(buildConfiguration) -r linux-x64--self-contained true --output $(build.artifactstagingdirectory)/linux-x64/BreathRateRecognition.zip'
+    zipAfterPublish: true
+    publishWebProjects: true
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    projects: '**/BreathRateRecognition.csproj'
+    arguments: ' --configuration $(buildConfiguration) -r linux-x32--self-contained true --output $(build.artifactstagingdirectory)/linux-x32/BreathRateRecognition.zip'
+    zipAfterPublish: true
+    publishWebProjects: true
 
 - task: DotNetCoreCLI@2
   inputs:
@@ -36,6 +59,24 @@ steps:
     arguments: ' --configuration $(buildConfiguration) -r linux-arm --self-contained true --output $(build.artifactstagingdirectory)/linux-arm/BreathRateRecognition.zip'
     zipAfterPublish: true
     publishWebProjects: true
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: '$(build.artifactstagingdirectory)/linux-x32'
+    artifact: 'linux-x32'
+    publishLocation: 'pipeline'
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: '$(build.artifactstagingdirectory)/linux-x64'
+    artifact: 'linux-x64'
+    publishLocation: 'pipeline'
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: '$(build.artifactstagingdirectory)/win-x32'
+    artifact: 'win-x32'
+    publishLocation: 'pipeline'
 
 - task: PublishPipelineArtifact@1
   inputs:
