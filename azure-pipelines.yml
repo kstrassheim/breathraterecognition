@@ -67,3 +67,25 @@ steps:
     targetPath: '$(build.artifactstagingdirectory)/package'
     artifact: 'package'
     publishLocation: 'pipeline'
+
+- task: PublishPipelineArtifact@1
+  inputs:
+   targetPath: '$(build.artifactstagingdirectory)/win-x64'
+   artifact: 'win-x64'
+   publishLocation: 'pipeline'
+- task: PublishPipelineArtifact@1
+  inputs:
+   targetPath: '$(build.artifactstagingdirectory)/win-x86'
+   artifact: 'win-x86'
+   publishLocation: 'pipeline'
+- task: PublishPipelineArtifact@1
+  inputs:
+   targetPath: '$(build.artifactstagingdirectory)/linux-x64'
+   artifact: 'linux-x64'
+   publishLocation: 'pipeline'
+- task: PublishPipelineArtifact@1
+  inputs:
+   targetPath: '$(build.artifactstagingdirectory)/linux-arm'
+   artifact: 'linux-arm'
+   publishLocation: 'pipeline'
+    
