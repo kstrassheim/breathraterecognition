@@ -57,7 +57,7 @@ steps:
   inputs:
     command: 'publish'
     projects: '**/BreathRateRecognition.csproj'
-    arguments: ' --configuration $(buildConfiguration) -r linux-arm --self-contained true --output $(build.artifactstagingdirectory)/linux-arm /BreathRateRecognition-linux-arm.zip'
+    arguments: ' --configuration $(buildConfiguration) -r linux-arm --self-contained true --output $(build.artifactstagingdirectory)/linux-arm/BreathRateRecognition-linux-arm.zip'
     zipAfterPublish: true
     publishWebProjects: true
 
