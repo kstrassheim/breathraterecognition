@@ -25,7 +25,8 @@ steps:
   inputs:
     command: 'publish'
     projects: '**/BreathRateRecognition.csproj'
-    arguments: ' --configuration $(buildConfiguration) --output $(build.artifactstagingdirectory)/dotnetcore31'
+    arguments: ' --configuration $(buildConfiguration) --output $(build.artifactstagingdirectory)/dotnetcore31/'
+    zipAfterPublish: false
     publishWebProjects: true
 
 - task: ArchiveFiles@2
@@ -33,28 +34,30 @@ steps:
     rootFolderOrFile: '$(build.artifactstagingdirectory)/dotnetcore31'
     includeRootFolder: false
     archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/package/brr-dotnetcore31.zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/package/BreathRateRecognition-dotnetcore31.zip'
     replaceExistingArchive: true
 
 - task: DotNetCoreCLI@2
   inputs:
     command: 'publish'
     projects: '**/BreathRateRecognition.csproj'
-    arguments: ' --configuration $(buildConfiguration) -r win-x64 --self-contained true --output $(build.artifactstagingdirectory)/win-x64'
+    arguments: ' --configuration $(buildConfiguration) -r win-x64 --self-contained true --output $(build.artifactstagingdirectory)/win-x64/'
+    zipAfterPublish: false
     publishWebProjects: true
 - task: ArchiveFiles@2
   inputs:
     rootFolderOrFile: '$(build.artifactstagingdirectory)/win-x64'
     includeRootFolder: false
     archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/package/brr-win-x64.zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/package/BreathRateRecognition-win-x64.zip'
     replaceExistingArchive: true
 
 - task: DotNetCoreCLI@2
   inputs:
     command: 'publish'
     projects: '**/BreathRateRecognition.csproj'
-    arguments: ' --configuration $(buildConfiguration) -r win-x86 --self-contained true --output $(build.artifactstagingdirectory)/win-x86/BreathRateRecognition-win-x86.zip'
+    arguments: ' --configuration $(buildConfiguration) -r win-x86 --self-contained true --output $(build.artifactstagingdirectory)/win-x86/'
+    zipAfterPublish: false
     publishWebProjects: true
 
 - task: ArchiveFiles@2
@@ -62,14 +65,15 @@ steps:
     rootFolderOrFile: '$(build.artifactstagingdirectory)/win-x86'
     includeRootFolder: false
     archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/package/brr_win-x86.zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/package/BreathRateRecognition-win-x86.zip'
     replaceExistingArchive: true
 
 - task: DotNetCoreCLI@2
   inputs:
     command: 'publish'
     projects: '**/BreathRateRecognition.csproj'
-    arguments: ' --configuration $(buildConfiguration) -r linux-x64 --self-contained true --output $(build.artifactstagingdirectory)/linux-x64'
+    arguments: ' --configuration $(buildConfiguration) -r linux-x64 --self-contained true --output $(build.artifactstagingdirectory)/linux-x64/'
+    zipAfterPublish: false
     publishWebProjects: true
 
 - task: ArchiveFiles@2
@@ -77,14 +81,15 @@ steps:
     rootFolderOrFile: '$(build.artifactstagingdirectory)/linux-x64'
     includeRootFolder: false
     archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/package/brr-linux-x64.zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/package/BreathRateRecognition-linux-x64.zip'
     replaceExistingArchive: true
 
 - task: DotNetCoreCLI@2
   inputs:
     command: 'publish'
     projects: '**/BreathRateRecognition.csproj'
-    arguments: ' --configuration $(buildConfiguration) -r linux-arm --self-contained true --output $(build.artifactstagingdirectory)/linux-arm'
+    arguments: ' --configuration $(buildConfiguration) -r linux-arm --self-contained true --output $(build.artifactstagingdirectory)/linux-arm/'
+    zipAfterPublish: false
     publishWebProjects: true
 
 - task: ArchiveFiles@2
@@ -92,7 +97,7 @@ steps:
     rootFolderOrFile: '$(build.artifactstagingdirectory)/linux-arm'
     includeRootFolder: false
     archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/package/brr-linux-arm.zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/package/BreathRateRecognition-linux-arm.zip'
     replaceExistingArchive: true
 
 - task: PublishPipelineArtifact@1
