@@ -31,7 +31,7 @@ steps:
 
 - task: ArchiveFiles@2
   inputs:
-    rootFolderOrFile: '$(build.artifactstagingdirectory)/dotnetcore31'
+    rootFolderOrFile: '$(build.artifactstagingdirectory)/dotnetcore31/s'
     includeRootFolder: false
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/package/BreathRateRecognition-dotnetcore31.zip'
@@ -46,7 +46,7 @@ steps:
     publishWebProjects: true
 - task: ArchiveFiles@2
   inputs:
-    rootFolderOrFile: '$(build.artifactstagingdirectory)/win-x64'
+    rootFolderOrFile: '$(build.artifactstagingdirectory)/win-x64/s'
     includeRootFolder: false
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/package/BreathRateRecognition-win-x64.zip'
@@ -62,7 +62,7 @@ steps:
 
 - task: ArchiveFiles@2
   inputs:
-    rootFolderOrFile: '$(build.artifactstagingdirectory)/win-x86'
+    rootFolderOrFile: '$(build.artifactstagingdirectory)/win-x86/s'
     includeRootFolder: false
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/package/BreathRateRecognition-win-x86.zip'
@@ -78,7 +78,7 @@ steps:
 
 - task: ArchiveFiles@2
   inputs:
-    rootFolderOrFile: '$(build.artifactstagingdirectory)/linux-x64'
+    rootFolderOrFile: '$(build.artifactstagingdirectory)/linux-x64/s'
     includeRootFolder: false
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/package/BreathRateRecognition-linux-x64.zip'
@@ -94,7 +94,7 @@ steps:
 
 - task: ArchiveFiles@2
   inputs:
-    rootFolderOrFile: '$(build.artifactstagingdirectory)/linux-arm'
+    rootFolderOrFile: '$(build.artifactstagingdirectory)/linux-arm/s'
     includeRootFolder: false
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/package/BreathRateRecognition-linux-arm.zip'
