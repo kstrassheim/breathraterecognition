@@ -33,14 +33,14 @@ steps:
   inputs:
     command: 'publish'
     projects: '**/BreathRateRecognition.csproj'
-    arguments: ' --configuration $(buildConfiguration) -r win-x64 --self-contained true --output $(build.artifactstagingdirectory)/package/BreathRateRecognition-win-x64.zip'
+    arguments: ' --configuration $(buildConfiguration) -r win-x64 --self-contained true --output $(build.artifactstagingdirectory)/win-x64/BreathRateRecognition-win-x64.zip'
     zipAfterPublish: true
     publishWebProjects: true
 - task: DotNetCoreCLI@2
   inputs:
     command: 'publish'
     projects: '**/BreathRateRecognition.csproj'
-    arguments: ' --configuration $(buildConfiguration) -r win-x86 --self-contained true --output $(build.artifactstagingdirectory)/package/BreathRateRecognition-win-x86.zip'
+    arguments: ' --configuration $(buildConfiguration) -r win-x86 --self-contained true --output $(build.artifactstagingdirectory)/win-x86/BreathRateRecognition-win-x86.zip'
     zipAfterPublish: true
     publishWebProjects: true
 
@@ -48,7 +48,7 @@ steps:
   inputs:
     command: 'publish'
     projects: '**/BreathRateRecognition.csproj'
-    arguments: ' --configuration $(buildConfiguration) -r linux-x64 --self-contained true --output $(build.artifactstagingdirectory)/package/BreathRateRecognition-linux-x64.zip'
+    arguments: ' --configuration $(buildConfiguration) -r linux-x64 --self-contained true --output $(build.artifactstagingdirectory)/linux-x64/BreathRateRecognition-linux-x64.zip'
     zipAfterPublish: true
     publishWebProjects: true
 
@@ -57,7 +57,7 @@ steps:
   inputs:
     command: 'publish'
     projects: '**/BreathRateRecognition.csproj'
-    arguments: ' --configuration $(buildConfiguration) -r linux-arm --self-contained true --output $(build.artifactstagingdirectory)/package/BreathRateRecognition-linux-arm.zip'
+    arguments: ' --configuration $(buildConfiguration) -r linux-arm --self-contained true --output $(build.artifactstagingdirectory)/linux-arm /BreathRateRecognition-linux-arm.zip'
     zipAfterPublish: true
     publishWebProjects: true
 
