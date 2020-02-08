@@ -10,8 +10,9 @@ export class StackedBuffer {
     }
 
     push(val, ignoreFilter) {
-        if (!ignoreFilter && (this.paused || this.filterName && val && val.name !== this.filterName || this.filterPort && val && val.port !== this.filterPort)) return;
-        this.buffer.push(val);
+        if (val && !Array.isArray(val)) val = [val];
+        if (!ignoreFilter && (this.paused || this.filterName && val && val.length > 0 && val[0].name !== this.filterName || this.filterPort && val && val.length > 0 && val[0].port !== this.filterPort)) return;
+        this.buffer = this.buffer.concat(val);
         if (this.buffer.length >= this.bufferSize) {
             for (let i = 0; i < this.popCallback.length; i++) {
                 this.popCallback[i](this.buffer);

@@ -39,7 +39,7 @@ export class Dsp {
         if (!values && values.length < 1) { return; }
         let avg = this.getAvgValue(values);
         let v = values[0].value - avg;
-        if (this.onSelectAvgCallback) { this.onSelectAvgCallback(values[0].timestamp, avg, 1); }
+        if (this.onSelectAvgCallback) { this.onSelectAvgCallback(values[0].timestamp, avg, values[values.length - 1].timestamp, 1); }
         let pick = null;
         for (let i = 1; i < values.length; i++) {
             if (Math.sign(values[i].value - avg) !== Math.sign(v)) {

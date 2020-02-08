@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BreathRateRecognition.Model;
+using BreathRateRecognition.Server.Hubs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace BreathRateRecognition.Server.Controllers
 {
@@ -13,18 +15,18 @@ namespace BreathRateRecognition.Server.Controllers
     [ApiController]
     public class BreathRateRecognitionController : ControllerBase
     {
-        //[HttpGet]
-        //public string Get()
-        //{
-        //    return "Hello World";
-        //}
+        IHubContext<MeasurementDistributionHub> hub;
 
-        // POST: api/CapSignal
-        [HttpPost]
-        public void Post([FromBody] Metric measurement)
+        public BreathRateRecognitionController(IHubContext<MeasurementDistributionHub> hubContext)
         {
-            var i = measurement?.Value;
+            this.hub = hubContext;
         }
 
+        // POST: api/BreathRateRecognition
+        [HttpPost]
+        public async void Post([FromBody] IEnumerable<Metric> measurement)
+        {
+            await this.hub.Clients.All.SendAsync("measurement", measurement);
+        }
     }
 }

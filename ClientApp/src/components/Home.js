@@ -59,11 +59,12 @@ export class Home extends Component {
         this.rawSignalChart.current.addAnnotation(time, type == 2 ? 'red' : 'green');
     }
 
-    onDspAvgSelect(time, avg) {
+    onDspAvgSelect(time, avg, endTime) {
         if (!this.rawSignalChart.current) { return; }
         this.rawSignalChart.current.clearAnnotations();
         this.rawSignalChart.current.addHorizontalAnnotation(time, avg, 'orange');
         this.rawSignalChart.current.addAnnotation(time, 'blue');
+        this.rawSignalChart.current.addAnnotation(endTime, 'darkblue');
     }
 
     reset(ignoreHost) {

@@ -10,8 +10,9 @@ export class LowPassFilter extends StackedBuffer {
     }
 
     push(val) {
-        if (this.paused || this.filterName && val && val.name !== this.filterName || this.filterPort && val && val.port !== this.filterPort) return;
-        this.filterBuffer.push(val);
+        if (val && !Array.isArray(val)) val = [val];
+        if (this.paused || this.filterName && val && val.length > 0 && val[0].name !== this.filterName || this.filterPort && val && val.length > 0 && val[0].port !== this.filterPort) return;
+        this.filterBuffer = this.filterBuffer.concat(val);
         let lpv = this.lowPass(this.filterBuffer);
         super.push(lpv, true);
 
