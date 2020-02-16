@@ -144,6 +144,7 @@ export class Dsp {
             ret.period = distance / (picked.length - 1);
             ret.frequency = 1 / ret.period;
             ret.frequencyPerMinute = ret.frequency * 60;
+            ret.breathRate = Math.round(ret.frequencyPerMinute);
 
             // only return valid frequencies
             if (ret.frequencyPerMinute >= Dsp.minfreq && ret.frequencyPerMinute <= Dsp.maxfreq) {

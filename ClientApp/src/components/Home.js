@@ -24,11 +24,15 @@ export class Home extends Component {
         this.rawSignalChart = React.createRef();
         this.dsp = React.createRef();
         this.hostSelector = React.createRef();
-        this.state = { noiseSensity: 400 };
+        this.state = { noiseSensity: 400, breathRate: '', overlayBreathRate:true };
     }
 
     btnReset_Clicked() {
         this.reset();
+    }
+
+    btnOverlayBr_Clicked() {
+        this.setState({ overlayBreathRate: !this.state.overlayBreathRate})
     }
 
     onPauseChanged(paused) {
@@ -69,11 +73,13 @@ export class Home extends Component {
         if (!this.rawSignalChart.current) { return; }
         this.rawSignalChart.current.clearHorizontalAnnotation();
         this.rawSignalChart.current.addHorizontalAnnotation(res.avg, 'orange');
+        this.setState({ breathRate: res.breathRate });
     }
 
     onDspReset() {
         console.log("Reset");
         if (this.rawSignalChart.current) { this.rawSignalChart.current.clearAnnotations(); };
+        this.setState({ breathRate: '' });
     }
 
     onNoiseSensityChanged(evt) {
@@ -112,11 +118,21 @@ export class Home extends Component {
                 <div className="btn-group mb1" role="group" >
                     <PauseButton ref={this.pauseButton} onPauseChanged={this.onPauseChanged.bind(this)} />
                     <input id="btnReset" type="button" onClick={this.btnReset_Clicked.bind(this)} className="btn btn-outline-warning" value='Reset' />
+                    <input id="btnOverlayBr" type="button" onClick={this.btnOverlayBr_Clicked.bind(this)} className={'btn' + (this.state.overlayBreathRate ? ' btn-primary' : ' btn-secondary')} value={'Overlay BreathRate' + (this.state.overlayBreathRate ? ' On' : ' Off')} />
                 </div>
                 <HostSelector ref={this.hostSelector} onHostSelected={this.onHostSelected.bind(this)} onPortSelected={this.onPortSelected.bind(this)} onNewHostDetected={this.onNewHostDetected.bind(this)} />
-                <input type="range" min="100" step="100" max="3000" value={this.state.noiseSensity} className="custom-range" id="noiseRangeSelect" onChange={this.onNoiseSensityChanged.bind(this)} />
+                <div className="form-group form-inline" role="toolbar" >
+                    <label for="noiseRangeSelect">Noise Detection Sensity:</label>
+                    <input type="range" min="100" step="100" max="3000" value={this.state.noiseSensity} style={{ marginLeft: '5px', marginRight: '5px', boxShadow: '0', outline: '0 !important' }} className="form-control-range form-control custom-range" id="noiseRangeSelect" onChange={this.onNoiseSensityChanged.bind(this)} />
+                    <span> {this.state.noiseSensity}</span>
+                </div>
             </div>
-            <SignalChart ref={this.rawSignalChart} name="rawSignalChart" title="Raw Signal" expiration={Home.displaySec} />
+           
+            <div className="container" style={{ position: 'relative' }}>
+                <div style={{ position: 'absolute', opacity: 0.3, width: '100%', height: '100%', textAlign: 'center', fontWeight: 'bold', fontSize: '11em', display: 'flex', alignItems: 'center', justifyContent: 'center', display: (this.state.overlayBreathRate ? 'flex' : ' none') }}>{this.state.breathRate}</div>
+                <SignalChart ref={this.rawSignalChart} name="rawSignalChart" title="Raw Signal" expiration={Home.displaySec} />
+                
+            </div>
             <Dsp ref={this.dsp} noiseSensity={ this.state.noiseSensity } onDspSelect={this.onDspSelect.bind(this)} onDspUnselect={this.onDspUnselect.bind(this)} onDspResult={this.onDspResult.bind(this)} onDspReset={this.onDspReset.bind(this)} expiration={Home.displaySec} />
         </main>
     );
