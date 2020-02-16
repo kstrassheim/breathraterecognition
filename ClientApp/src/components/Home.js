@@ -10,7 +10,7 @@ import { SignalApi, DemoApi } from '../services/api';
 export class Home extends Component {
   //static displayName = Home.name;
     static bufferSize = 10;
-    static displaySec = 60;
+    static displaySec = 30;
     constructor(props) {
         super();
         this.inputBuffer = new StackedBuffer(Home.bufferSize);
@@ -24,6 +24,7 @@ export class Home extends Component {
         this.rawSignalChart = React.createRef();
         this.dsp = React.createRef();
         this.hostSelector = React.createRef();
+        this.state = { noiseSensity: 400 };
     }
 
     btnReset_Clicked() {
@@ -70,6 +71,15 @@ export class Home extends Component {
         this.rawSignalChart.current.addHorizontalAnnotation(res.avg, 'orange');
     }
 
+    onDspReset() {
+        console.log("Reset");
+        if (this.rawSignalChart.current) { this.rawSignalChart.current.clearAnnotations(); };
+    }
+
+    onNoiseSensityChanged(evt) {
+        this.setState({noiseSensity:evt.target.value})
+    }
+
     reset(ignoreHost) {
         //if (this.recordButton.current) { this.recordButton.current.stop(); }
         this.inputBuffer.clear();
@@ -104,9 +114,10 @@ export class Home extends Component {
                     <input id="btnReset" type="button" onClick={this.btnReset_Clicked.bind(this)} className="btn btn-outline-warning" value='Reset' />
                 </div>
                 <HostSelector ref={this.hostSelector} onHostSelected={this.onHostSelected.bind(this)} onPortSelected={this.onPortSelected.bind(this)} onNewHostDetected={this.onNewHostDetected.bind(this)} />
+                <input type="range" min="100" step="100" max="3000" value={this.state.noiseSensity} className="custom-range" id="noiseRangeSelect" onChange={this.onNoiseSensityChanged.bind(this)} />
             </div>
             <SignalChart ref={this.rawSignalChart} name="rawSignalChart" title="Raw Signal" expiration={Home.displaySec} />
-            <Dsp ref={this.dsp} onDspSelect={this.onDspSelect.bind(this)} onDspUnselect={this.onDspUnselect.bind(this)} onDspResult={this.onDspResult.bind(this)} expiration={Home.displaySec} />
+            <Dsp ref={this.dsp} noiseSensity={ this.state.noiseSensity } onDspSelect={this.onDspSelect.bind(this)} onDspUnselect={this.onDspUnselect.bind(this)} onDspResult={this.onDspResult.bind(this)} onDspReset={this.onDspReset.bind(this)} expiration={Home.displaySec} />
         </main>
     );
   }

@@ -4,10 +4,11 @@
 export class Dsp {
     static minfreq = 5;
     static maxfreq = 40;
-    toleranceSec = 0.5;
+    toleranceSec = 1.5;
 
-    constructor(expiration, onResultCallback, onSelectCallback, onUnselectCallback) {
+    constructor(expiration, noiseSensity, onResultCallback, onSelectCallback, onUnselectCallback, onReset) {
         this.expiration = expiration;
+        this.noiseSensity = noiseSensity;
         this.minPicks = Math.floor(expiration / 60 * Dsp.minfreq);
         this.minPicks = this.minPicks > 3 ? this.minPicks : 4;
         //this.processBuffer = new TimedBuffer(60, this.onProcessBufferPop.bind(this));
@@ -15,15 +16,23 @@ export class Dsp {
         this.onResultCallback = onResultCallback;
         this.onSelectCallback = onSelectCallback;
         this.onUnselectCallback = onUnselectCallback;
+        this.onReset = onReset;
+    }
+
+    setNoiseSensity(noiseSensity) {
+        console.log(`Noise Sensity set to ${noiseSensity}`);
+        this.noiseSensity = noiseSensity;
+
     }
 
     reset() {
         this.buffer = [];
         this.bufferSum = 0;
-        this.min = 0;
-        this.max = 0;
+        //this.min = null;
+        //this.max = null;
         this.sgn = -1;
         this.timestampReset = moment();
+        if (this.onReset) { this.onReset(); }
         //this.processBuffer.clear();
     }
 
@@ -39,7 +48,7 @@ export class Dsp {
         if (this.buffer.length < 1) {
             val.picked = true;
             this.buffer.push(val);
-            this.bufferSum = this.min = this.max = val.value;
+            this.bufferSum = val.value;
             return;
         };
 
@@ -50,6 +59,14 @@ export class Dsp {
                 removeItems++;
                 this.bufferSum = this.bufferSum - this.buffer[i].value;
                 if (this.onUnselectCallback) { this.onUnselectCallback(this.buffer[i]); }
+                //if (this.buffer[i] === this.min) {
+                //    console.log(`min ${this.min.value} outdated`);
+                //    this.min = null;
+                //}
+                //else if (this.buffer[i] === this.max) {
+                //    console.log(`max ${this.max.value} outdated`);
+                //    this.max = null;
+                //}
             }
             else {
                 break;
@@ -57,10 +74,42 @@ export class Dsp {
         }
 
         this.buffer.splice(0, removeItems);
-        console.log(`Deleted ${removeItems} items`);
+        //console.log(`Deleted ${removeItems} items`);
+
+        //if (!this.min || !this.max) {
+        //    console.log(`Getting new min or max`);
+        //    for (let i = 0; i < this.buffer.length; i++) {
+        //        //if (!this.min || this.buffer[i].value < this.min.value) {
+        //        //    this.min = this.buffer[i];
+        //        //    console.log(`new min found ${this.buffer[i].value}`);
+        //        //}
+
+        //        //if (!this.max || this.buffer[i].value > this.max.value) {
+        //        //    this.max = this.buffer[i];
+        //        //    console.log(`new max found ${this.buffer[i].value}`);
+        //        //}
+        //    }
+        //}
+
+        if (this.buffer.length > 2) {
+            //let span = this.max.value - this.min.value;
+            let avg = this.bufferSum / this.buffer.length;
+            let h = Math.abs(Math.abs(val.value) - avg);
+            if (h > this.noiseSensity) {
+                this.reset();
+                return;
+            }
+        }
+
         this.bufferSum = this.bufferSum + val.value;
-        if (this.min > val.value) { this.min = val.value; }
-        if (this.max < val.value) { this.max = val.value; }
+        //if (!this.min || this.min.value > val.value) {
+        //    this.min = val;
+        //    //console.log(`new min ${val.value}`);
+        //}
+        //if (!this.max || this.max.value < val.value) {
+        //    this.max = val;
+        //    //console.log(`new max ${val.value}`);
+        //}
         this.buffer.push(val);
 
         let timestampOfLastPicked = this.timestampReset;
@@ -71,7 +120,7 @@ export class Dsp {
         }
 
         let distanceToLastPicked = moment.duration(moment(val.timestamp).diff(timestampOfLastPicked)).asSeconds();
-        let avg = (this.bufferSum / this.buffer.length);
+        //let avg = (this.bufferSum / this.buffer.length);
         let relVal = val.value - (this.bufferSum / this.buffer.length);
         let valSgn = Math.sign(relVal);
 

@@ -7,7 +7,7 @@ export class Dsp extends Component {
 
     constructor(props) {
         super(props);
-        this.dsp = new SvcDsp(this.props.expiration, this.onDspResult.bind(this), this.props.onDspSelect, this.props.onDspUnselect);
+        this.dsp = new SvcDsp(this.props.expiration, this.props.noiseSensity, this.onDspResult.bind(this), this.props.onDspSelect, this.props.onDspUnselect, this.props.onDspReset);
         this.state = { result: this.dsp.result };
         this.signalChart = React.createRef();
     }
@@ -28,6 +28,12 @@ export class Dsp extends Component {
             this.signalChart.current.process([result]);
         }
         if (this.props.onDspResult) { this.props.onDspResult(result); }
+    }
+
+    componentWillUpdate(nextProps) {
+        if (this.noiseSensity !== nextProps.noiseSensity) {
+            this.dsp.setNoiseSensity(nextProps.noiseSensity);
+        }
     }
 
     render() {
