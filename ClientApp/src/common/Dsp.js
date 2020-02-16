@@ -1,5 +1,5 @@
 ﻿import React, { Component } from 'react';
-import moment from 'moment';
+//import moment from 'moment';
 import { SignalChart } from '../common/SignalChart';
 import { Dsp as SvcDsp } from '../services/dsp';
 
@@ -7,7 +7,7 @@ export class Dsp extends Component {
 
     constructor(props) {
         super(props);
-        this.dsp = new SvcDsp(this.onDspResult.bind(this), this.props.onDspSelect, this.props.onDspAvgSelect);
+        this.dsp = new SvcDsp(this.props.expiration, this.onDspResult.bind(this), this.props.onDspSelect, this.props.onDspUnselect);
         this.state = { result: this.dsp.result };
         this.signalChart = React.createRef();
     }
@@ -27,6 +27,7 @@ export class Dsp extends Component {
         if (result && this.signalChart.current) {
             this.signalChart.current.process([result]);
         }
+        if (this.props.onDspResult) { this.props.onDspResult(result); }
     }
 
     render() {
@@ -52,7 +53,7 @@ export class Dsp extends Component {
                                 </div>
 
                                 <div>
-                                    <label>Avg Value:</label><span>{this.state.result.avgValue}</span>
+                                    <label>Avg Value:</label><span>{this.state.result.avg}</span>
                                 </div>
                             </div>
                             :

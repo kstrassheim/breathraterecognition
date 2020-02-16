@@ -86,9 +86,9 @@ export class SignalChart extends LineChart {
         });
     }
 
-    addHorizontalAnnotation(time, value, color) {
+    addHorizontalAnnotation(value, color) {
         this.chart.options.annotation.annotations.push({
-            id: `${time}_${value}`,
+            id: `${moment()}_${value}`,
             scaleID: 'y-axis-0',
             type: 'line',
             mode: 'horizontal',
@@ -98,8 +98,26 @@ export class SignalChart extends LineChart {
         });
     }
 
-    clearAnnotations() {
-        this.chart.options.annotation.annotations.splice(0, this.chart.options.annotation.annotations.length);
+    clearAnnotations(numToClear) {
+        this.chart.options.annotation.annotations.splice(0, numToClear ? numToClear : this.chart.options.annotation.annotations.length);
+    }
+
+    clearHorizontalAnnotation() {
+        for (let i = 0; i < this.chart.options.annotation.annotations.length; i++) {
+            if (this.chart.options.annotation.annotations[i].mode === 'horizontal') {
+                this.chart.options.annotation.annotations.splice(i, 1);
+                break;
+            }
+        }
+    }
+
+    removeAnnotation(time) {
+        for (let i = 0; i < this.chart.options.annotation.annotations.length; i++) {
+            if (this.chart.options.annotation.annotations[i].value === time) {
+                this.chart.options.annotation.annotations.splice(i, 1);
+                break;
+            }
+        }
     }
 
     process(values) {
@@ -121,9 +139,20 @@ export class SignalChart extends LineChart {
 
         // insert new values
         values.forEach(o => ds.data.push({ x: o.timestamp, y: o[this.props.valuePropertyName || 'value']}));
-
+        let latestTimestamp = values[values.length - 1].timestamp;
         // delete old values if expired
-        if (ds.data.length > 0 && moment.duration(moment().diff(ds.data[0].x)).asSeconds() > (this.props.expiration || this.defaultExpiration)) { ds.data.splice(0, values.length); }
+        let todelete = 0;
+        let expiration = (this.props.expiration ? this.props.expiration : this.defaultExpiration);
+        for (let i = 0; i < ds.data.length; i++) {
+            if (moment.duration(moment(latestTimestamp).diff(ds.data[i].x)).asSeconds() > expiration) {
+                todelete++;
+            }
+            else {
+                break;
+            }
+        }
+
+        ds.data.splice(0, todelete);
 
         this.chart.update();
     }
