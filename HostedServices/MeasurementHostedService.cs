@@ -146,12 +146,12 @@ namespace Server.Measurement
                                             try
                                             {
                                                 int val = 0;
-                                                var line = p.ReadLine()?.Split(',');
+                                                var line = p.ReadLine()?.TrimStart('[').TrimEnd(']').Split(',');
                                                 if (line != null && line.Length > 0)
                                                 {
                                                     for (var i = 0; i < line.Length; i++)
                                                     {
-                                                        if (int.TryParse(line?[i], out val) && val != 0)
+                                                        if (int.TryParse(line[i].TrimStart('[').TrimEnd(']'), out val) && val != 0)
                                                         {
                                                             this.PushMetric(new Metric()
                                                             {
