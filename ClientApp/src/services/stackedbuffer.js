@@ -3,22 +3,46 @@ export class StackedBuffer {
     paused = false;
     filterName = '';
     filterPort = '';
-    constructor(bufferSize, popCallback) {
+    constructor(bufferSize) {
         this.buffer = [];
         this.bufferSize = bufferSize;
-        this.popCallback = popCallback ? (Array.isArray(popCallback) ? popCallback : [popCallback]) : [];
     }
 
     push(val, ignoreFilter) {
         if (val && !Array.isArray(val)) val = [val];
         if (!ignoreFilter && (this.paused || this.filterName && val && val.length > 0 && val[0].name !== this.filterName || this.filterPort && val && val.length > 0 && val[0].port !== this.filterPort)) return;
-        this.buffer = this.buffer.concat(val);
+
+        // direct pop if buffer too small
+        if (this.bufferSize < 1) {
+            if (this.popCallback && Array.isArray(this.popCallback)) {
+                for (let i = 0; i < this.popCallback.length; i++) {
+                    this.popCallback[i](val);
+                }
+            }
+        }
+
+        if (val.length < 2) {
+            this.buffer.push(val[0]);
+        }
+        else {
+            this.buffer = this.buffer.concat(val);
+        }
         if (this.buffer.length >= this.bufferSize) {
-            for (let i = 0; i < this.popCallback.length; i++) {
-                this.popCallback[i](this.buffer);
+            if (this.popCallback && Array.isArray(this.popCallback)) {
+                for (let i = 0; i < this.popCallback.length; i++) {
+                    this.popCallback[i](this.buffer);
+                }
             }
             this.clear();
         }
+    }
+
+    changeSize(newSize) {
+        if (!newSize || newSize < 0) {
+            return;
+        }
+
+        this.bufferSize = newSize;
     }
 
     clear() {

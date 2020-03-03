@@ -3,8 +3,7 @@ import { SignalSelect } from '../common/SignalSelect';
 import { BrdMultiplePoint } from '../breathRateControls/BrdMultiplePoint';
 
 
-export function Home(props) {
-
+export function MultiplePointPage(props) {
     let signalSelectControl = React.createRef();
     let breathRateDetectionControl = React.createRef();
 

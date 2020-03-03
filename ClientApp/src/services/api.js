@@ -87,6 +87,7 @@ export class DemoApi {
                     if (this.onSignalCallbacks) {
                         let o = Object.assign({}, this.demos[i]);
                         o.name = this.demoHostName;
+                        //let t = o.timestamp;
                         o.timestamp = new Date();
                         if (Array.isArray(this.onSignalCallbacks)) {
                             this.onSignalCallbacks.forEach(f => f(o));

@@ -9,7 +9,7 @@ export class BrdMultiplePoint {
     constructor(expiration, noiseSensity, onResultCallback, onSelectCallback, onUnselectCallback, onReset) {
         this.expiration = expiration;
         this.noiseSensity = noiseSensity;
-        this.minPicks = Math.floor(expiration / 60 * Dsp.minfreq);
+        this.minPicks = Math.floor(expiration / 60 * BrdMultiplePoint.minfreq);
         this.minPicks = this.minPicks > 3 ? this.minPicks : 4;
         //this.processBuffer = new TimedBuffer(60, this.onProcessBufferPop.bind(this));
         this.reset();
@@ -22,18 +22,19 @@ export class BrdMultiplePoint {
     setNoiseSensity(noiseSensity) {
         console.log(`Noise Sensity set to ${noiseSensity}`);
         this.noiseSensity = noiseSensity;
-
     }
 
-    reset() {
+    setDisplaySeconds(displaySeconds) {
+        if (!displaySeconds || displaySeconds < 0) { return; }
+        this.expiration = displaySeconds;
+    }
+
+    reset(useCallbacks) {
         this.buffer = [];
         this.bufferSum = 0;
-        //this.min = null;
-        //this.max = null;
         this.sgn = -1;
         this.timestampReset = moment();
-        if (this.onReset) { this.onReset(); }
-        //this.processBuffer.clear();
+        if (useCallbacks && this.onReset) { this.onReset(); }
     }
 
     process(values) {
@@ -54,19 +55,13 @@ export class BrdMultiplePoint {
 
         let removeItems = 0;
         for (let i = 0; i < this.buffer.length; i++) {
-            let distance = moment.duration(moment(val.timestamp).diff(this.buffer[i].timestamp)).asSeconds();
+            let distance = Math.abs(moment.duration(moment(val.timestamp).diff(this.buffer[i].timestamp)).asSeconds());
             if (distance > this.expiration) {
                 removeItems++;
                 this.bufferSum = this.bufferSum - this.buffer[i].value;
-                if (this.onUnselectCallback) { this.onUnselectCallback(this.buffer[i]); }
-                //if (this.buffer[i] === this.min) {
-                //    console.log(`min ${this.min.value} outdated`);
-                //    this.min = null;
-                //}
-                //else if (this.buffer[i] === this.max) {
-                //    console.log(`max ${this.max.value} outdated`);
-                //    this.max = null;
-                //}
+                if (this.onUnselectCallback) {
+                    this.onUnselectCallback(this.buffer[i]);
+                }
             }
             else {
                 break;
@@ -74,52 +69,30 @@ export class BrdMultiplePoint {
         }
 
         this.buffer.splice(0, removeItems);
-        //console.log(`Deleted ${removeItems} items`);
 
-        //if (!this.min || !this.max) {
-        //    console.log(`Getting new min or max`);
-        //    for (let i = 0; i < this.buffer.length; i++) {
-        //        //if (!this.min || this.buffer[i].value < this.min.value) {
-        //        //    this.min = this.buffer[i];
-        //        //    console.log(`new min found ${this.buffer[i].value}`);
-        //        //}
-
-        //        //if (!this.max || this.buffer[i].value > this.max.value) {
-        //        //    this.max = this.buffer[i];
-        //        //    console.log(`new max found ${this.buffer[i].value}`);
-        //        //}
-        //    }
-        //}
-
+        // noise detection
         if (this.buffer.length > 2) {
             //let span = this.max.value - this.min.value;
             let avg = this.bufferSum / this.buffer.length;
             let h = Math.abs(Math.abs(val.value) - avg);
             if (h > this.noiseSensity) {
-                this.reset();
+                this.reset(true);
                 return;
             }
         }
 
         this.bufferSum = this.bufferSum + val.value;
-        //if (!this.min || this.min.value > val.value) {
-        //    this.min = val;
-        //    //console.log(`new min ${val.value}`);
-        //}
-        //if (!this.max || this.max.value < val.value) {
-        //    this.max = val;
-        //    //console.log(`new max ${val.value}`);
-        //}
         this.buffer.push(val);
 
         let timestampOfLastPicked = this.timestampReset;
         for (let i = this.buffer.length - 1; i > 0; i--) {
             if (this.buffer[i].picked) {
-                timestampOfLastPicked = this.buffer[i].timestamp; break;
+                timestampOfLastPicked = this.buffer[i].timestamp;
+                break;
             }
         }
 
-        let distanceToLastPicked = moment.duration(moment(val.timestamp).diff(timestampOfLastPicked)).asSeconds();
+        let distanceToLastPicked = Math.abs(moment.duration(moment(timestampOfLastPicked).diff(val.timestamp)).asSeconds());
         //let avg = (this.bufferSum / this.buffer.length);
         let relVal = val.value - (this.bufferSum / this.buffer.length);
         let valSgn = Math.sign(relVal);
@@ -127,7 +100,9 @@ export class BrdMultiplePoint {
         if (valSgn !== this.sgn && distanceToLastPicked > this.toleranceSec) {
             this.sgn = valSgn;
             val.picked = true;
-            if (this.onSelectCallback) { this.onSelectCallback(val); }
+            if (this.onSelectCallback) {
+                this.onSelectCallback(val, 'red');
+            }
             this.processDsp();
         }
     }
@@ -147,7 +122,7 @@ export class BrdMultiplePoint {
             ret.breathRate = Math.round(ret.frequencyPerMinute);
 
             // only return valid frequencies
-            if (ret.frequencyPerMinute >= Dsp.minfreq && ret.frequencyPerMinute <= Dsp.maxfreq) {
+            if (ret.frequencyPerMinute >= BrdMultiplePoint.minfreq && ret.frequencyPerMinute <= BrdMultiplePoint.maxfreq) {
                 if (this.onResultCallback) {
                     this.onResultCallback(ret);
                 }

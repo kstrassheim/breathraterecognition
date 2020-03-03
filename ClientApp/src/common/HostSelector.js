@@ -80,19 +80,19 @@ export class HostSelector extends Component {
     render() {
         return (
             <React.Fragment>
-                <div id="ddlHosts" class="input-group mr-1 group" onChange={this.ddlHostsSelected.bind(this)}>
-                    <div class="input-group-prepend">
-                        <label class="input-group-text" for="inputGroupSelect01">Host</label>
+                <div id="ddlHosts" className="input-group mr-1 group" onChange={this.ddlHostsSelected.bind(this)}>
+                    <div className="input-group-prepend">
+                        <label className="input-group-text" htmlFor="inputGroupSelect01">Host</label>
                     </div>
-                    <select class="custom-select" id="inputGroupSelect01">
+                    <select className="custom-select" id="inputGroupSelect01">
                         {this.state.hosts.map((v, i) => <option key={`hostOption${i}`} value={v.name}>{v.name}</option>)}
                     </select>
                 </div>
-                <div id="ddlPorts" class="input-group mr-1 group" onChange={this.ddlPortSelected.bind(this)}>
-                    <div class="input-group-prepend">
-                        <label class="input-group-text" for="inputGroupSelect01">Port</label>
+                <div id="ddlPorts" className="input-group mr-1 group" onChange={this.ddlPortSelected.bind(this)}>
+                    <div className="input-group-prepend">
+                        <label className="input-group-text" htmlFor="inputGroupSelect01">Port</label>
                     </div>
-                    <select class="custom-select" id="inputGroupSelect02">
+                    <select className="custom-select" id="inputGroupSelect02">
                         {(this.state.selectedHost ? this.state.selectedHost : { ports: [] }).ports.map((v, i) => <option key={`portOption${i}`} value={v}>{v}</option>)}
                     </select>
                 </div>

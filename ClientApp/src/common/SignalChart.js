@@ -112,15 +112,32 @@ export class SignalChart extends LineChart {
     }
 
     removeAnnotation(time) {
+        if (!time) { this.clearAnnotations(); }
         for (let i = 0; i < this.chart.options.annotation.annotations.length; i++) {
-            if (this.chart.options.annotation.annotations[i].value === time) {
+            let td = moment.duration(moment(this.chart.options.annotation.annotations[i].value).diff(moment(time))).asMilliseconds();
+            if (td <= 0) {
                 this.chart.options.annotation.annotations.splice(i, 1);
-                break;
             }
         }
     }
 
     process(values) {
+        this.processMultipleValues(values);
+    }
+
+    processOneByOne(values) {
+        values.forEach((v, i) => {
+            if (i > 0) {
+                let to = moment.duration(moment(v.timestamp).diff(values[i - 1].timestamp)).asMilliseconds()
+                setTimeout(() => this.processMultipleValues(v), to);
+            }
+            else {
+                this.processMultipleValues(v)
+            }
+        });
+    }
+
+    processMultipleValues(values) {
         if (!Array.isArray(values)) { values = [values]; }
         if (values.length < 1 || !values[0].port || !values[0].timestamp) { return; }
         let first = values[0];
@@ -138,7 +155,7 @@ export class SignalChart extends LineChart {
         }
 
         // insert new values
-        values.forEach(o => ds.data.push({ x: o.timestamp, y: o[this.props.valuePropertyName || 'value']}));
+        values.forEach(o => ds.data.push({ x: o.timestamp, y: o[this.props.valuePropertyName || 'value'] }));
         let latestTimestamp = values[values.length - 1].timestamp;
         // delete old values if expired
         let todelete = 0;
@@ -153,6 +170,9 @@ export class SignalChart extends LineChart {
         }
 
         ds.data.splice(0, todelete);
+        if (todelete > 0) {
+            this.removeAnnotation(ds.data[0].x);
+        }
 
         this.chart.update();
     }

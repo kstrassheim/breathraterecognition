@@ -9,6 +9,11 @@ export class TimedBuffer {
         this.timer = moment();
     }
 
+    setExpiration(expiration) {
+        if (!expiration || expiration < 1) { return; }
+        this.secondsToKeep = expiration;
+    }
+
     push(val) {
         if (this.buffer.length < 1) { this.timer = moment(); }
         this.buffer.push(val);
