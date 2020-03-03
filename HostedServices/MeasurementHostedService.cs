@@ -2,6 +2,7 @@
 using BreathRateRecognition.Server;
 using BreathRateRecognition.Server.Hubs;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
@@ -17,12 +18,49 @@ namespace Server.Measurement
 {
     public class MeasurementHostedService : IHostedService, IDisposable
     {
-        int bufferSize = 10;
-        string[] serverUrls = new string[] { "https://breathrate.azurewebsites.net/" }; 
+        int bufferSize = 1;
+        int baudRate = 115200;
+        string[] additionalMeasureDistributionUrls = new string[] { };
+        IConfiguration config;
 
-        public MeasurementHostedService(IHubContext<MeasurementDistributionHub> hubContext)
+        public MeasurementHostedService(IHubContext<MeasurementDistributionHub> hubContext, IConfiguration configuration)
         {
             HubContext = hubContext;
+            this.config = configuration;
+
+            try
+            {
+                this.bufferSize = config.GetValue<int>("SendBufferSize");
+                Console.WriteLine($"Using Setting Send buffer size of:{bufferSize}");
+            }
+            catch
+            {
+                Console.WriteLine($"Failed to get Setting Send buffer size using default value of:{bufferSize}");
+            }
+
+
+            try
+            {
+                this.baudRate = config.GetValue<int>("BaudRate");
+                Console.WriteLine($"Using Setting Baud Rate of:{this.baudRate}");
+            }
+            catch
+            {
+                Console.WriteLine($"Failed to get Setting Baud Rate using default value:{baudRate}");
+            }
+
+
+            try
+            {
+                string val = config.GetValue<string>("AdditionalMeasureDistributionUrls");
+                this.additionalMeasureDistributionUrls = val.Split(';').Select(o => o.Trim())?.ToArray();
+                Console.WriteLine($"Sending to following additional distribution server urls: {val}");
+            }
+            catch
+            {
+                Console.WriteLine($"No additional distribution server urls found");
+            }
+
         }
 
         private readonly string AppName = System.Environment.MachineName;
@@ -68,7 +106,7 @@ namespace Server.Measurement
 
         public async Task SendSignalToServers(IEnumerable<Metric> m)
         {
-            foreach(var s in serverUrls)
+            foreach(var s in this.additionalMeasureDistributionUrls)
             {
                 await this.SendSignalToServer(s, m);
             }
@@ -99,6 +137,7 @@ namespace Server.Measurement
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
+
             this.mainTask = new Task(() =>
             {
                 while (true)
@@ -114,7 +153,7 @@ namespace Server.Measurement
                                 var p = this.ports.FirstOrDefault(sp => sp.PortName == n);
                                 if (p == null)
                                 {
-                                    p = new SerialPort(n, 115200);
+                                    p = new SerialPort(n, this.baudRate);
                                 }
 
                                 this.ports.Add(p);
