@@ -1,7 +1,7 @@
 ﻿import moment from 'moment';
 //import { TimedBuffer } from './timedbuffer';
 
-export class Dsp {
+export class BrdMultiplePoint {
     static minfreq = 5;
     static maxfreq = 40;
     toleranceSec = 1.5;

@@ -1,13 +1,12 @@
 ﻿import React, { Component } from 'react';
 //import moment from 'moment';
-import { SignalChart } from '../common/SignalChart';
-import { Dsp as SvcDsp } from '../services/dsp';
+import { SignalChart } from './SignalChart';
 
-export class Dsp extends Component {
+export class AbstractBrd extends Component {
 
-    constructor(props) {
+    constructor(props, svcBrd) {
         super(props);
-        this.dsp = new SvcDsp(this.props.expiration, this.props.noiseSensity, this.onDspResult.bind(this), this.props.onDspSelect, this.props.onDspUnselect, this.props.onDspReset);
+        this.svcBrd = new svcBrd(this.props.expiration, this.props.noiseSensity, this.onDspResult.bind(this), this.props.onDspSelect, this.props.onDspUnselect, this.props.onDspReset);
         this.state = { result: this.dsp.result };
         this.signalChart = React.createRef();
     }
@@ -19,7 +18,7 @@ export class Dsp extends Component {
     reset() {
         this.dsp.reset();
         this.signalChart.current.reset();
-        this.setState({result: this.dsp.result });
+        this.setState({ result: this.dsp.result });
     }
 
     onDspResult(result) {
@@ -43,7 +42,7 @@ export class Dsp extends Component {
                 <section>
                     <h3>Signal Rate</h3>
                     {
-                        this.state.result ? 
+                        this.state.result ?
                             <div>
                                 <div>
                                     <label>Period:</label><span>{this.state.result.period}s</span>
@@ -67,7 +66,7 @@ export class Dsp extends Component {
                                 <span>Invalid</span>
                             </div>
                     }
-                    
+
                 </section>
             </article>
         );

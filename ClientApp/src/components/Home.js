@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { RecordButton, PauseButton } from '../common/Buttons';
 import { HostSelector } from '../common/HostSelector';
 import { SignalChart } from '../common/SignalChart';
-import { Dsp } from '../common/Dsp';
+import { Dsp } from '../common/BrdMultiplePoint';
 import { LowPassFilter } from '../services/lowpassfilter';
 import { StackedBuffer } from '../services/stackedbuffer';
 import { SignalApi, DemoApi } from '../services/api';
