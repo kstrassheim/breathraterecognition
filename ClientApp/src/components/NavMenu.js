@@ -47,6 +47,9 @@ export class NavMenu extends Component {
                 <NavItem>
                     <NavLink tag={Link} to="/SinglePeriod">Single Period</NavLink>
                 </NavItem>
+                <NavItem>
+                    <NavLink tag={Link} to="/Fourier">Fourier</NavLink>
+                </NavItem>
               </ul>
             </Collapse>
           </div>

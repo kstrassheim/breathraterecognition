@@ -34,8 +34,9 @@ export class SignalSelect extends Component {
             showAlgorithm: (!!this.props.defaultShowAlgorithm),
             showRawSignal: (!!this.props.defaultShowRawSignal),
             darkMode: $("link[href*='dark.css']").length > 0,
-            chartFontSize: this.props.chartFontSize,
-            avgCutAlgoToleranceSec: this.props.defaultAvgCutAlgoToleranceSec
+            chartFontSize: this.props.defaultChartFontSize,
+            avgCutAlgoToleranceSec: this.props.defaultAvgCutAlgoToleranceSec,
+            processBufferSeconds: this.props.defaultProcessBufferSeconds
         };
     }
 
@@ -69,6 +70,10 @@ export class SignalSelect extends Component {
 
     setAvgCutAlgoToleranceSecCallbacks(callbacks) {
         this.avgCutAlgoToleranceSecCallbacks = callbacks;
+    }
+
+    setProcessBufferSecondsCallbacks(callbacks) {
+        this.processBufferSecondsCallbacks = callbacks;
     }
 
     btnHideLabels_Clicked() {
@@ -177,6 +182,15 @@ export class SignalSelect extends Component {
         if (this.avgCutAlgoToleranceSecCallbacks) {
             for (let i = 0; i < this.avgCutAlgoToleranceSecCallbacks.length; i++) {
                 this.avgCutAlgoToleranceSecCallbacks[i](e.target.value);
+            }
+        }
+    }
+
+    onProcessBufferSecondsChanged(e) {
+        this.setState({ processBufferSeconds: e.target.value })
+        if (this.processBufferSecondsCallbacks) {
+            for (let i = 0; i < this.processBufferSecondsCallbacks.length; i++) {
+                this.processBufferSecondsCallbacks[i](e.target.value);
             }
         }
     }
@@ -308,6 +322,11 @@ export class SignalSelect extends Component {
                         <label htmlFor="avgCutAlgoToleranceSecSelect" style={{ whiteSpace: 'nowrap' }}>Avg Cut Tolerance Seconds:</label>
                         <input type="range" min="0" step="0.1" max="3" value={this.state.avgCutAlgoToleranceSec} onChange={this.onAvgCutAlgoToleranceSecChanged.bind(this)} style={{ marginLeft: '5px', marginRight: '5px', boxShadow: '0', outline: '0 !important' }} className="form-control-range form-control custom-range" id="avgCutAlgoToleranceSecSelect" />
                         <span> {this.state.avgCutAlgoToleranceSec}</span>
+                    </div>
+                    <div className="btn-group  mb1" role="group">
+                        <label htmlFor="processBufferSecondsSelect" style={{ whiteSpace: 'nowrap' }}>Process Buffer Seconds:</label>
+                        <input type="range" min="1" step="1" max="10" value={this.state.processBufferSeconds} onChange={this.onProcessBufferSecondsChanged.bind(this)} style={{ marginLeft: '5px', marginRight: '5px', boxShadow: '0', outline: '0 !important' }} className="form-control-range form-control custom-range" id="processBufferSecondsSelect" />
+                        <span> {this.state.processBufferSeconds}</span>
                     </div>
                 </div>
 

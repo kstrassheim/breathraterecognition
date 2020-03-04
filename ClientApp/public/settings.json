@@ -5,26 +5,28 @@
     "noiseSensity": 400,
     "bufferSize": 10,
     "lowPassSensity": 6,
-    "displaySeconds": 30,
+    "displaySeconds": 10,
     "chartFontSize": 6,
     "resultHidden": true,
     "hideLabels": true,
     "showAlgorithm": false,
     "overlayBreathRate": true,
     "showRawSignal": false,
-    "avgCutAlgoToleranceSec" :  0.5
+    "avgCutAlgoToleranceSec": 0.5,
+    "processBufferSeconds" :  7
   },
   "other": {
     "noiseSensity": 400,
     "bufferSize": 10,
     "lowPassSensity": 6,
-    "displaySeconds": 30,
+    "displaySeconds": 10,
     "chartFontSize": 6,
     "resultHidden": false,
     "hideLabels": false,
-    "showAlgorithm": false,
+    "showAlgorithm": true,
     "overlayBreathRate": true,
     "showRawSignal": false,
-    "avgCutAlgoToleranceSec": 0.5
+    "avgCutAlgoToleranceSec": 0.5,
+    "processBufferSeconds": 7
   }
 }

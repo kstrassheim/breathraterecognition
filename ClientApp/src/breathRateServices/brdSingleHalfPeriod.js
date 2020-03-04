@@ -3,10 +3,10 @@ import { TimedBuffer } from '../services/timedbuffer';
 
 export class BrdSingleHalfPeriod {
 
-    constructor(expiration, noiseSensity, avgCutAlgoToleranceSec, onResultCallback, onSelectCallback, onUnselectCallback, onReset) {
+    constructor(processBufferSec, noiseSensity, avgCutAlgoToleranceSec, onResultCallback, onSelectCallback, onUnselectCallback, onReset) {
         this.noiseSensity = noiseSensity;
         this.avgCutAlgoToleranceSec = avgCutAlgoToleranceSec;
-        this.processBuffer = new TimedBuffer(expiration, this.onProcessBufferPop.bind(this));
+        this.processBuffer = new TimedBuffer(processBufferSec, this.onProcessBufferPop.bind(this));
         this.onResultCallback = onResultCallback;
         this.onSelectCallback = onSelectCallback;
         this.onUnselectCallback = onUnselectCallback;
@@ -18,8 +18,8 @@ export class BrdSingleHalfPeriod {
         if (useCallbacks && this.onReset) { this.onReset(); }
     }
 
-    setDisplaySeconds(displaySeconds) {
-        this.processBuffer.setExpiration(displaySeconds);
+    setProcessBufferSeconds(sec) {
+        this.processBuffer.setExpiration(sec);
     }
 
     setAvgCutAlgoToleranceSec(v) {
@@ -104,9 +104,6 @@ export class BrdSingleHalfPeriod {
             }
         }
 
-        // else return invalid
-        if (this.onResultCallback) {
-            this.onResultCallback(null);
-        }
+      
     }
 }

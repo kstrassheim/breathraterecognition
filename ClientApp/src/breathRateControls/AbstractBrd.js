@@ -14,8 +14,8 @@ export class AbstractBrd extends Component {
 
     constructor(props, svcBrd) {
         super(props);
-        this.svcBrd = new svcBrd(props.defaultDisplaySeconds, props.defaultNoiseSensity, props.defaultAvgCutAlgoToleranceSec, this.onDspResult.bind(this), this.onDspSelect.bind(this), this.onDspUnselect.bind(this), this.onDspReset.bind(this));
-        this.state = { result: this.svcBrd.result, displaySeconds: props.defaultDisplaySeconds, hidden: (!!this.props.defaultResultHidden), hideLabels: (!!this.props.hideLabels), chartFontSize: this.props.chartFontSize };
+        this.svcBrd = new svcBrd(props.defaultProcessBufferSeconds, props.defaultNoiseSensity, props.defaultAvgCutAlgoToleranceSec, this.onDspResult.bind(this), this.onDspSelect.bind(this), this.onDspUnselect.bind(this), this.onDspReset.bind(this));
+        this.state = { result: this.svcBrd.result, displaySeconds: props.defaultDisplaySeconds, processBufferSeconds: props.defaultProcessBufferSeconds, hidden: (!!this.props.defaultResultHidden), hideLabels: (!!this.props.defaultHideLabels), chartFontSize: this.props.defaultChartFontSize };
         this.signalChart = React.createRef();
     }
 
@@ -48,8 +48,14 @@ export class AbstractBrd extends Component {
 
     onDisplaySecondsChanged(v) {
         if (!v || v < 0) { return; }
-        this.svcBrd.setDisplaySeconds(v);
         this.setState({ displaySeconds: v });
+    }
+
+    onProcessBufferSecondsChanged(v) {
+        if (!v || v < 0) { return; }
+        this.svcBrd.setProcessBufferSeconds(v);
+        this.setState({ processBufferSeconds: v });
+        
     }
 
     onDspResult(result) {
@@ -76,6 +82,7 @@ export class AbstractBrd extends Component {
             this.props.signalSelectControlRef.current.setHideResultCallbacks([this.onHideResultChanged.bind(this)]);
             this.props.signalSelectControlRef.current.setChartFontSizeCallbacks([this.onChartFontSizeChanged.bind(this)]);
             this.props.signalSelectControlRef.current.setAvgCutAlgoToleranceSecCallbacks([this.onAvgCutAlgoToleranceSecChanged.bind(this)]);
+            this.props.signalSelectControlRef.current.setProcessBufferSecondsCallbacks([this.onProcessBufferSecondsChanged.bind(this)]);
 
             this.onDspSelectCallbacks = [this.props.signalSelectControlRef.current.onDspSelect.bind(this.props.signalSelectControlRef.current)];
             this.onDspUnselectCallbacks = [this.props.signalSelectControlRef.current.onDspUnselect.bind(this.props.signalSelectControlRef.current)];

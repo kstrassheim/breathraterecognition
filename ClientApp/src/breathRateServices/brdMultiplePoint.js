@@ -6,13 +6,11 @@ export class BrdMultiplePoint {
     static maxfreq = 40;
     
 
-    constructor(expiration, noiseSensity, avgCutAlgoToleranceSec, onResultCallback, onSelectCallback, onUnselectCallback, onReset) {
-        
-        this.expiration = expiration;
+    constructor(processBufferSec, noiseSensity, avgCutAlgoToleranceSec, onResultCallback, onSelectCallback, onUnselectCallback, onReset) {
+        this.processBufferSec = processBufferSec;
         this.noiseSensity = noiseSensity;
         this.avgCutAlgoToleranceSec = avgCutAlgoToleranceSec;
-        this.minPicks = Math.floor(expiration / 60 * BrdMultiplePoint.minfreq);
-        this.minPicks = this.minPicks > 3 ? this.minPicks : 4;
+        this.initMinPicks();
         //this.processBuffer = new TimedBuffer(60, this.onProcessBufferPop.bind(this));
         this.reset();
         this.onResultCallback = onResultCallback;
@@ -21,14 +19,20 @@ export class BrdMultiplePoint {
         this.onReset = onReset;
     }
 
+    initMinPicks() {
+        this.minPicks = Math.floor(this.processBufferSec / 60 * BrdMultiplePoint.minfreq);
+        this.minPicks = this.minPicks > 3 ? this.minPicks : 4;
+    }
+
     setNoiseSensity(noiseSensity) {
         console.log(`Noise Sensity set to ${noiseSensity}`);
         this.noiseSensity = noiseSensity;
     }
 
-    setDisplaySeconds(displaySeconds) {
-        if (!displaySeconds || displaySeconds < 0) { return; }
-        this.expiration = displaySeconds;
+    setProcessBufferSeconds(sec) {
+        this.processBuffer.setExpiration(sec);
+        this.processBufferSec = sec;
+        this.initMinPicks();
     }
 
     setAvgCutAlgoToleranceSec(v) {
@@ -63,7 +67,7 @@ export class BrdMultiplePoint {
         let removeItems = 0;
         for (let i = 0; i < this.buffer.length; i++) {
             let distance = Math.abs(moment.duration(moment(val.timestamp).diff(this.buffer[i].timestamp)).asSeconds());
-            if (distance > this.expiration) {
+            if (distance > this.processBufferSec) {
                 removeItems++;
                 this.bufferSum = this.bufferSum - this.buffer[i].value;
                 if (this.onUnselectCallback) {
