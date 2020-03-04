@@ -34,7 +34,7 @@ export class NavMenu extends Component {
       <header>
             <Navbar className={"navbar-expand-sm navbar-toggleable-sm" + ((!!this.props.darkMode) ? " navbar-dark" : "")} light={true}>
           <div className="container-fluid">
-            <NavbarBrand onClick={this.btnCollapseClick.bind(this)}>Breath Rate Recognition</NavbarBrand>
+                    <NavbarBrand onClick={this.btnCollapseClick.bind(this)}><img src="favicon-32x32.png" width="18" height="18" alt="Logo" style={{ marginTop: '-4px', marginRight:'7px'}} />Breath  Rate</NavbarBrand>
             <NavbarToggler onClick={this.toggleNavbar} className="mr-2" />
             <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!this.state.collapsed} navbar>
               <ul className="navbar-nav flex-grow">
