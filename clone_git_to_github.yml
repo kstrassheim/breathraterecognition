@@ -15,6 +15,6 @@ steps:
     script: |
       git clone --mirror "https://anything:$(token)@dev.azure.com/strassheim/BreathRateRecognition/_git/BreathRateRecognition"    
       cd BreathRateRecognition.git	
-      git remote add --mirror=fetch secondary "https://anything:$(githubtoken)@github.com/OpenDiabetesBP26/OpenDiabetes-Plot.git"
+      git remote add --mirror=fetch secondary "https://anything:$(githubtoken)@github.com:sign4media/breathraterecognition.git"
       git fetch origin
       git push secondary --all
