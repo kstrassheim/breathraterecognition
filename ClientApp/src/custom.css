@@ -12,3 +12,29 @@ code {
   background-color: #1b6ec2;
   border-color: #1861ac;
 }
+
+#optionsToolbar .btn-group {
+    min-height: 33px;
+}
+
+#optionsToolbar .btn-group > * {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+#optionsToolbar .btn-group > span {
+    padding-right: 15px;
+}
+
+input[type=range] + span {
+    color:darkorange;
+}
+
+#optionsToolbar .btn-group > label {
+    font-weight: 500;
+}
+
+
+
+
+  

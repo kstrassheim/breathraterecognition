@@ -9,9 +9,9 @@ export function Home(props) {
     let breathRateDetectionControl = React.createRef();
 
     return (
-        <main>
+        <React.Fragment>
             <SignalSelect ref={signalSelectControl} {...props} />
             <BrdMultiplePoint ref={breathRateDetectionControl} signalSelectControlRef={signalSelectControl} {...props}> </BrdMultiplePoint>
-        </main>
+        </React.Fragment>
     );
 }

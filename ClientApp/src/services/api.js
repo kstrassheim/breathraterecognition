@@ -1,9 +1,11 @@
 ﻿import * as signalR from "@microsoft/signalr";
 import moment from 'moment';
+import { StackedBuffer } from './stackedbuffer'
 
 export class SignalApi {
 
     constructor(onSignalCallbacks) {
+ 
         //this.initChart('Server');
         this.hubConnection = new signalR.HubConnectionBuilder()
             .withUrl("/measurement")
@@ -38,8 +40,14 @@ export class DemoApi {
     active = false;
     demos = null;
 
-    constructor(onSignalCallbacks) {
+    constructor(bufferSize, onSignalCallbacks) {
+        this.demoBuffer = new StackedBuffer(bufferSize);
         this.onSignalCallbacks = onSignalCallbacks;
+    }
+
+    onBufferSizeChanged(v) {
+        if (v < 1) { return; }
+        this.demoBuffer.changeSize(v)
     }
 
     async sleep(milliseconds) {
@@ -51,30 +59,40 @@ export class DemoApi {
         if (!this.demos || this.demos.length < 1) {
             this.demos = (await (await fetch("demo.json")).json());
         }
+        //let isSGArray = Array.isArray(this.onSignalCallbacks);
+        
+        this.demoBuffer.popCallback = this.onSignalCallbacks;
 
-        for (let i = 0; i < this.demos.length; i++) {
-            if (this.onSignalCallbacks) {
-                let o = Object.assign({}, this.demos[i]);
-                //o.name = this.demoHostName;
-                //let t = o.timestamp;
-                o.timestamp = new Date();
-                if (Array.isArray(this.onSignalCallbacks)) {
-                    this.onSignalCallbacks.forEach(f => f(o));
-                }
-                else {
-                    this.onSignalCallbacks(this.demos[i]);
-                }
-                // sleep until next call
-                let ms = i < this.demos.length - 1 ? moment(this.demos[i + 1].timestamp).diff(moment(this.demos[i].timestamp)).valueOf() : 40;
-                await this.sleep(ms);
-                if (!this.active) {
-                    return;
+        while (this.active && this.demos) {
+            if (this.demos && this.demos.length > 0) {
+                let ms = 0;
+                for (let i = 0; i < this.demos.length; i++) {
+                    //if (this.onSignalCallbacks) {
+                    let o = Object.assign({}, this.demos[i]);
+                    //o.name = this.demoHostName;
+                    //let t = o.timestamp;
+                    //o.timestamp = new Date();
+                    this.demoBuffer.push(o);
+                    // sleep until next call
+                    ms += i < this.demos.length - 1 ? moment(this.demos[i + 1].timestamp).diff(moment(this.demos[i].timestamp)).valueOf() : 40;
+                    // sleep only every buffer sync interval
+                    if (i % this.demoBuffer.bufferSize === 0) {
+                        await this.sleep(ms);
+                        ms = 0;
+                    }
+                        
+                    if (!this.active) {
+                        return;
+                    }
+                    //}
                 }
             }
+            this.demoBuffer.clear();
         }
     }
 
     disconnect() {
+        this.demoBuffer.clear();
         this.active = false;
     }
 }

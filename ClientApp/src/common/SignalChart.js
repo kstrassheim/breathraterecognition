@@ -1,5 +1,6 @@
 ﻿import React, { Component } from 'react';
 import Chart from 'chart.js';
+import * as ChartAnnotation from 'chartjs-plugin-annotation';
 import moment from 'moment';
 
 class LineChart extends Component {
@@ -17,7 +18,41 @@ class LineChart extends Component {
         return color;
     }
 
-    componentDidMount = () => {
+    componentWillUpdate(nextProps) {
+        let chartChanged = false;
+        if (this.props.hideLabels !== nextProps.hideLabels) {
+            this.chart.options.legend.display = !nextProps.hideLabels;
+            this.chart.options.title.display = !nextProps.hideLabels;
+  
+            this.chart.options.scales.xAxes.forEach(a=>a.display = !nextProps.hideLabels);
+            this.chart.options.scales.yAxes.forEach(a => a.display = !nextProps.hideLabels);
+            chartChanged = true;
+        }
+
+        if (this.props.fontSize !== nextProps.fontSize) {
+            this.chart.options.title.fontSize = nextProps.fontSize;
+            this.chart.options.scales.xAxes.forEach(a => a.ticks.fontSize = nextProps.fontSize);
+            this.chart.options.scales.yAxes.forEach(a => a.ticks.fontSize = nextProps.fontSize);
+            chartChanged = true;
+        }
+
+        if (this.props.showRawSignal !== nextProps.showRawSignal) {
+
+            this.chart.data.datasets.forEach(d => d.hidden = (!d.label.endsWith("LowPass")) ? !nextProps.showRawSignal : d.hidden);
+            chartChanged = true;
+        }
+
+        if (this.props.showAlgorithm !== nextProps.showAlgorithm && this.chart.options.annotation && this.chart.options.annotation.annotations) {
+            if (!nextProps.showAlgorithm) {
+                this.clearAnnotations();
+            }
+        }
+
+        if (chartChanged) { this.chart.update();}
+    }
+
+    componentDidMount() {
+        let i = 0;
         this.chart = new Chart(document.getElementById(this.props.name), {
             type: 'line',
             data: {
@@ -25,8 +60,15 @@ class LineChart extends Component {
                 datasets: []
             },
             options: {
+                legend: {
+                    display: !this.props.hideLabels,
+                    labels: {
+                        fontSize: this.props.fontSize
+                    }
+                },
                 title: {
-                    display: true,
+                    display: !this.props.hideLabels, // !this.props.hideLabels,
+                    fontSize: this.props.fontSize,
                     text: this.props.title || this.props.name
                 },
                 annotation: {
@@ -35,6 +77,8 @@ class LineChart extends Component {
                 responsive: true,
                 scales: {
                     xAxes: [{
+                        ticks: { fontSize: this.props.fontSize},
+                        display: !this.props.hideLabels,
                         type: "time",
                         time: {
                             //parser: timeFormat,
@@ -48,20 +92,35 @@ class LineChart extends Component {
                             //tooltipFormat: 'll',
                             //minUnit: 'millisecond',
                         },
+                        
                         scaleLabel: {
-                            display: true,
                             labelString: 'Time'
                         },
                     }],
+                    
                     yAxes: [{
+                        ticks: { fontSize: this.props.fontSize },
+                        display: !this.props.hideLabels,
                         scaleLabel: {
-                            display: true,
                             labelString: 'Value'
                         }
                     }]
                 }
             }
         });
+    }
+
+    componentWillUnmount() {
+        this.chart.options.annotation.annotations.splice(0, this.chart.options.annotation.annotations.length);
+        this.chart.data.datasets.forEach(ds => {
+            ds.data.splice(0, ds.data.length);
+            if (ds.data.labels) {
+                ds.data.labels.splice(0, ds.data.labels.length);
+            }
+        });
+        this.chart.data.labels.splice(0, this.chart.data.labels.length);
+
+        this.chart.update();
     }
 
     render() {
@@ -75,27 +134,31 @@ export class SignalChart extends LineChart {
     defaultExpiration = 10;
 
     addAnnotation(time, color) {
-        this.chart.options.annotation.annotations.push({
-            id: `${time}`,
-            scaleID: 'x-axis-0',
-            type: 'line',
-            mode: 'vertical',
-            value: time,
-            borderColor: color,
-            borderWidth: 1
-        });
+        if (this.props.showAlgorithm) {
+            this.chart.options.annotation.annotations.push({
+                id: `${time}`,
+                scaleID: 'x-axis-0',
+                type: 'line',
+                mode: this.props.showAlgorithm ? 'vertical' : 'v',
+                value: time,
+                borderColor: color,
+                borderWidth: 1
+            });
+        }
     }
 
     addHorizontalAnnotation(value, color) {
-        this.chart.options.annotation.annotations.push({
-            id: `${moment()}_${value}`,
-            scaleID: 'y-axis-0',
-            type: 'line',
-            mode: 'horizontal',
-            value: value,
-            borderColor: color,
-            borderWidth: 1
-        });
+        if (this.props.showAlgorithm) {
+            this.chart.options.annotation.annotations.push({
+                id: `${moment()}_${value}`,
+                scaleID: 'y-axis-0',
+                type: 'line',
+                mode: this.props.showAlgorithm ? 'horizontal' : 'h',
+                value: value,
+                borderColor: color,
+                borderWidth: 1
+            });
+        }
     }
 
     clearAnnotations(numToClear) {
@@ -114,6 +177,7 @@ export class SignalChart extends LineChart {
     removeAnnotation(time) {
         if (!time) { this.clearAnnotations(); }
         for (let i = 0; i < this.chart.options.annotation.annotations.length; i++) {
+            if (this.chart.options.annotation.annotations[i].mode !== 'vertical') {  continue; }
             let td = moment.duration(moment(this.chart.options.annotation.annotations[i].value).diff(moment(time))).asMilliseconds();
             if (td <= 0) {
                 this.chart.options.annotation.annotations.splice(i, 1);
@@ -149,7 +213,8 @@ export class SignalChart extends LineChart {
                 data: [],
                 label: first.port,
                 borderColor: this.getRandomColor(),
-                fill: false
+                fill: false,
+                hidden: (!first.port.endsWith("LowPass")) ? !this.props.showRawSignal : false
             }
             this.chart.data.datasets.push(ds);
         }
@@ -179,14 +244,16 @@ export class SignalChart extends LineChart {
 
     reset() {
         this.clearAnnotations();
-        if (this.chart.data.datasets.length > 0) {
+        if (this.chart.data.datasets && this.chart.data.datasets.length > 0) {
             for (let i = 0; i < this.chart.data.datasets.length; i++) {
                 this.chart.data.datasets[i].data.splice(0, this.chart.data.datasets[i].data.length);
             }
             this.chart.data.datasets.splice(0, this.chart.data.datasets.length)
         }
 
-        this.chart.data.labels.splice(0, this.chart.data.labels.length);
+        if (this.chart.data.labels) {
+            this.chart.data.labels.splice(0, this.chart.data.labels.length);
+        }
         this.chart.update();
     }
 }

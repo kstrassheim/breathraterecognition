@@ -14,8 +14,8 @@ export class AbstractBrd extends Component {
 
     constructor(props, svcBrd) {
         super(props);
-        this.svcBrd = new svcBrd(props.defaultDisplaySeconds, props.defaultNoiseSensity, this.onDspResult.bind(this), this.onDspSelect.bind(this), this.onDspUnselect.bind(this), this.onDspReset.bind(this));
-        this.state = { result: this.svcBrd.result, displaySeconds: props.defaultDisplaySeconds };
+        this.svcBrd = new svcBrd(props.defaultDisplaySeconds, props.defaultNoiseSensity, props.defaultAvgCutAlgoToleranceSec, this.onDspResult.bind(this), this.onDspSelect.bind(this), this.onDspUnselect.bind(this), this.onDspReset.bind(this));
+        this.state = { result: this.svcBrd.result, displaySeconds: props.defaultDisplaySeconds, hidden: (!!this.props.defaultResultHidden), hideLabels: (!!this.props.hideLabels), chartFontSize: this.props.chartFontSize };
         this.signalChart = React.createRef();
     }
 
@@ -25,8 +25,15 @@ export class AbstractBrd extends Component {
 
     reset() {
         this.svcBrd.reset();
-        this.signalChart.current.reset();
+        if (this.signalChart.current) { this.signalChart.current.reset(); }
         this.setState({ result: this.svcBrd.result });
+    }
+
+    onHideLabelsChanged(v) {
+        this.setState({ hideLabels: v });
+    }
+    onHideResultChanged(v) {
+        this.setState({ hidden: v });
     }
 
     onDspSelect(value, color) {  this.applySingleValueCallback(this.onDspSelectCallbacks, value, color); }
@@ -51,12 +58,24 @@ export class AbstractBrd extends Component {
         this.applySingleValueCallback(this.onDspResultCallbacks, result);
     }
 
+    onChartFontSizeChanged(v) {
+        this.setState({ chartFontSize: v });
+    }
+
+    onAvgCutAlgoToleranceSecChanged(v) {
+        this.svcBrd.setAvgCutAlgoToleranceSec(v);
+    }
+
     componentDidMount() {
         if (this.props.signalSelectControlRef.current) {
             this.props.signalSelectControlRef.current.setLowPassCallbacks([this.process.bind(this)]);
             this.props.signalSelectControlRef.current.setResetCallbacks([this.reset.bind(this)]);
             this.props.signalSelectControlRef.current.setNoiseSensityChangedCallbacks([this.onNoiseSensityChanged.bind(this)]);
             this.props.signalSelectControlRef.current.setDisplaySecondsChangedCallbacks([this.onDisplaySecondsChanged.bind(this)]);
+            this.props.signalSelectControlRef.current.setHideLabelsCallbacks([this.onHideLabelsChanged.bind(this)]);
+            this.props.signalSelectControlRef.current.setHideResultCallbacks([this.onHideResultChanged.bind(this)]);
+            this.props.signalSelectControlRef.current.setChartFontSizeCallbacks([this.onChartFontSizeChanged.bind(this)]);
+            this.props.signalSelectControlRef.current.setAvgCutAlgoToleranceSecCallbacks([this.onAvgCutAlgoToleranceSecChanged.bind(this)]);
 
             this.onDspSelectCallbacks = [this.props.signalSelectControlRef.current.onDspSelect.bind(this.props.signalSelectControlRef.current)];
             this.onDspUnselectCallbacks = [this.props.signalSelectControlRef.current.onDspUnselect.bind(this.props.signalSelectControlRef.current)];
@@ -65,10 +84,19 @@ export class AbstractBrd extends Component {
         }
     }
 
+    componentWillUnmount() {
+        this.svcBrd.reset();
+    }
+
     render() {
         return (
-            <article>
-                <SignalChart ref={this.signalChart} name="signalChart" title="Breath rate" valuePropertyName={'frequencyPerMinute'} expiration={this.state.displaySeconds} />
+            <React.Fragment>
+                {
+                    this.state.hidden ?
+                        <React.Fragment />
+                        : (<React.Fragment>
+                
+                <SignalChart ref={this.signalChart} visi name="signalChart" title="Breath rate" valuePropertyName={'frequencyPerMinute'} expiration={this.state.displaySeconds} hideLabels={this.state.hideLabels} fontSize={this.state.chartFontSize} />
                 <section>
                     <h3>Signal Rate</h3>
                     {
@@ -93,8 +121,10 @@ export class AbstractBrd extends Component {
                             </div>
                     }
 
-                </section>
-            </article>
+                            </section>
+                        </React.Fragment>)
+                }
+            </React.Fragment>
         );
     }
 }

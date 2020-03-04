@@ -2,10 +2,10 @@
 import { TimedBuffer } from '../services/timedbuffer';
 
 export class BrdSingleHalfPeriod {
-    toleranceSec = 0.5;
 
-    constructor(expiration, noiseSensity, onResultCallback, onSelectCallback, onUnselectCallback, onReset) {
+    constructor(expiration, noiseSensity, avgCutAlgoToleranceSec, onResultCallback, onSelectCallback, onUnselectCallback, onReset) {
         this.noiseSensity = noiseSensity;
+        this.avgCutAlgoToleranceSec = avgCutAlgoToleranceSec;
         this.processBuffer = new TimedBuffer(expiration, this.onProcessBufferPop.bind(this));
         this.onResultCallback = onResultCallback;
         this.onSelectCallback = onSelectCallback;
@@ -20,6 +20,11 @@ export class BrdSingleHalfPeriod {
 
     setDisplaySeconds(displaySeconds) {
         this.processBuffer.setExpiration(displaySeconds);
+    }
+
+    setAvgCutAlgoToleranceSec(v) {
+        if (!v || v < 0) { return; }
+        this.avgCutAlgoToleranceSec = v;
     }
 
     process(values) {
@@ -76,7 +81,7 @@ export class BrdSingleHalfPeriod {
                 }
                 else {
                     var ret = moment.duration(moment(values[i].timestamp).diff(moment(pick.timestamp))).asSeconds();
-                    if (ret > this.toleranceSec) {
+                    if (ret > this.avgCutAlgoToleranceSec) {
                         if (this.onSelectCallback) { this.onSelectCallback(values[i], 'green'); }
                         console.log(`second pick - sign ${Math.sign(values[i].value - avg)} - cmp sign ${Math.sign(v)} - val ${values[i].value} - v ${v} - avg ${avg} on ${i} of  ${values.length}`, values[i]);
                         let ret = Object.assign({}, values[i]);

@@ -4,10 +4,15 @@ export class LowPassFilter {
 
     portSuffix = "_LowPass";
     constructor(bufferLength, degree) {
-        this.stackedBuffer = new StackedBuffer(bufferLength);
-        this.stackedBuffer.popCallback = [this.onPop.bind(this)];
+        this.outputBuffer = new StackedBuffer(bufferLength);
+        this.outputBuffer.popCallback = [this.onPop.bind(this)];
         this.degree = degree;
-        this.filterBuffer = [];
+        this.reset();
+    }
+
+    reset() {
+        this.buffer = [];
+        this.bufferSum = 0;
     }
 
     onPop(ret) {
@@ -19,61 +24,51 @@ export class LowPassFilter {
 
     push(val) {
         if (val && !Array.isArray(val)) val = [val];
-        if (this.paused || this.filterName && val && val.length > 0 && val[0].name !== this.filterName || this.filterPort && val && val.length > 0 && val[0].port !== this.filterPort) {
-            return;
-        }
+        if (this.paused || this.filterName && val && val.length > 0 && val[0].name !== this.filterName || this.filterPort && val && val.length > 0 && val[0].port !== this.filterPort) { return; }
+        val.forEach(v => {
 
-        if (this.degree < 1) {
-            let ret = Object.assign({}, val[0]);
-            ret.port = ret.port + this.portSuffix;
-            this.onPop([ret]);
-            this.clear();
-            return;
-        }
+            // clone object and push to buffer
+            let o = Object.assign({}, v);
+            o.port = o.port + this.portSuffix;
 
-        if (val.length < 2) {
-            this.filterBuffer.push(val[0]);
-        }
-        else {
-            this.filterBuffer = this.filterBuffer.concat(val);
-        }
-
-      
-        if (this.filterBuffer.length > this.degree) {
-            let len = this.filterBuffer.length - this.degree;
-            for (let i = 0; i < len; i++) {
-                let lpv = this.lowPass(this.filterBuffer);
-                this.stackedBuffer.push(lpv, true);
-                this.filterBuffer.splice(0, 1);
+            // direct pop if low pass degree is disabed
+            if (this.degree < 1) {
+                this.outputBuffer.push(o, true);
+                if (this.buffer.length > 0) { this.buffer.splice(0, this.buffer.length); }
+                return;
             }
-        }
+
+            this.bufferSum += o.value;
+            this.buffer.push(o);
+
+            // remove items that are over lp degree
+            let toRemove = this.buffer.length > this.degree ? this.buffer.length - this.degree : 0;
+            for (let i = 0; i < toRemove; i++) {
+                if (i >= this.buffer.length) { continue; }
+                this.bufferSum -= this.buffer[i].value;
+                this.buffer.splice(0, 1);
+            }
+
+            // calculare avg of all lp items and return middle item in buffer
+            let lpo = Object.assign({}, this.buffer && this.buffer.length > 0 ? this.buffer[Math.floor(this.buffer.length/2)] : o);
+            lpo.value = this.bufferSum / (this.buffer.length > 0 ? this.buffer.length : 1);
+            // push to output
+            this.outputBuffer.push(lpo);
+        });
     }
 
     changeSize(newSize) {
-        this.stackedBuffer.changeSize(newSize);
-        this.bufferSize = newSize;
+        this.outputBuffer.changeSize(newSize);
     }
 
     changeSensity(newSensity) {
-        if (!newSensity || newSensity < 0) {
-            return;
-        }
-
+        if (!newSensity || newSensity < 0) { return;  }
         this.degree = newSensity;
-    }
-
-    lowPass(values) {
-        let avg = values.map(o=>o.value).reduce((a, b) => a + b, 0) / values.length;
-        // get centered array value
-        let pickIndex =  Math.floor(values.length / 2);
-        let ret = Object.assign({}, values[pickIndex]);
-        ret.port = ret.port + this.portSuffix;
-        ret.value = avg;
-        return ret;
+        this.reset();
     }
 
     clear() {
-        this.stackedBuffer.clear();
-        this.filterBuffer.splice(0, this.filterBuffer.length);
+        this.outputBuffer.clear();
+        this.buffer.splice(0, this.buffer.length);
     }
 }

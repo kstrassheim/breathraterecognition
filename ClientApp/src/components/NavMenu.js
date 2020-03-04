@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import './NavMenu.css';
+import $ from 'jquery'
 
 export class NavMenu extends Component {
   static displayName = NavMenu.name;
@@ -12,36 +13,43 @@ export class NavMenu extends Component {
     this.toggleNavbar = this.toggleNavbar.bind(this);
     this.state = {
       collapsed: true
-    };
+      };
+
+    
   }
 
   toggleNavbar () {
     this.setState({
       collapsed: !this.state.collapsed
     });
-  }
+    }
+
+    btnCollapseClick() {
+        console.log("collapse");
+        $("#optionsToolbar").slideToggle("fast");
+    }
 
   render () {
     return (
       <header>
-        <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3" light>
-          <Container>
-            <NavbarBrand tag={Link} to="/">Breath Rate Recognition</NavbarBrand>
+            <Navbar className={"navbar-expand-sm navbar-toggleable-sm" + ((!!this.props.darkMode) ? " navbar-dark" : "")} light={true}>
+          <div className="container-fluid">
+            <NavbarBrand onClick={this.btnCollapseClick.bind(this)}>Breath Rate Recognition</NavbarBrand>
             <NavbarToggler onClick={this.toggleNavbar} className="mr-2" />
             <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!this.state.collapsed} navbar>
               <ul className="navbar-nav flex-grow">
                 <NavItem>
-                  <NavLink tag={Link} className="text-dark" to="/">Home</NavLink>
+                  <NavLink tag={Link} to="/">Home</NavLink>
                 </NavItem>
                 <NavItem>
-                    <NavLink tag={Link} className="text-dark" to="/MultiplePoint">Multiple Point</NavLink>
+                    <NavLink tag={Link} to="/MultiplePoint">Multiple Point</NavLink>
                 </NavItem>
                 <NavItem>
-                    <NavLink tag={Link} className="text-dark" to="/SinglePeriod">Single Period</NavLink>
+                    <NavLink tag={Link} to="/SinglePeriod">Single Period</NavLink>
                 </NavItem>
               </ul>
             </Collapse>
-          </Container>
+          </div>
         </Navbar>
       </header>
     );

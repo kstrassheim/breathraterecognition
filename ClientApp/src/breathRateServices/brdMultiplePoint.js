@@ -4,11 +4,13 @@
 export class BrdMultiplePoint {
     static minfreq = 5;
     static maxfreq = 40;
-    toleranceSec = 1.5;
+    
 
-    constructor(expiration, noiseSensity, onResultCallback, onSelectCallback, onUnselectCallback, onReset) {
+    constructor(expiration, noiseSensity, avgCutAlgoToleranceSec, onResultCallback, onSelectCallback, onUnselectCallback, onReset) {
+        
         this.expiration = expiration;
         this.noiseSensity = noiseSensity;
+        this.avgCutAlgoToleranceSec = avgCutAlgoToleranceSec;
         this.minPicks = Math.floor(expiration / 60 * BrdMultiplePoint.minfreq);
         this.minPicks = this.minPicks > 3 ? this.minPicks : 4;
         //this.processBuffer = new TimedBuffer(60, this.onProcessBufferPop.bind(this));
@@ -27,6 +29,11 @@ export class BrdMultiplePoint {
     setDisplaySeconds(displaySeconds) {
         if (!displaySeconds || displaySeconds < 0) { return; }
         this.expiration = displaySeconds;
+    }
+
+    setAvgCutAlgoToleranceSec(v) {
+        if (!v || v < 0) { return; }
+        this.avgCutAlgoToleranceSec = v;
     }
 
     reset(useCallbacks) {
@@ -97,7 +104,7 @@ export class BrdMultiplePoint {
         let relVal = val.value - (this.bufferSum / this.buffer.length);
         let valSgn = Math.sign(relVal);
 
-        if (valSgn !== this.sgn && distanceToLastPicked > this.toleranceSec) {
+        if (valSgn !== this.sgn && distanceToLastPicked > this.avgCutAlgoToleranceSec) {
             this.sgn = valSgn;
             val.picked = true;
             if (this.onSelectCallback) {

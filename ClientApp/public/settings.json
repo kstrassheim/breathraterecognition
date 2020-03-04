@@ -1,0 +1,30 @@
+{
+  "darkMode": true,
+  "settingsCollapsed" :  true,
+  "home": {
+    "noiseSensity": 400,
+    "bufferSize": 10,
+    "lowPassSensity": 6,
+    "displaySeconds": 30,
+    "chartFontSize": 6,
+    "resultHidden": true,
+    "hideLabels": true,
+    "showAlgorithm": false,
+    "overlayBreathRate": true,
+    "showRawSignal": false,
+    "avgCutAlgoToleranceSec" :  0.5
+  },
+  "other": {
+    "noiseSensity": 400,
+    "bufferSize": 10,
+    "lowPassSensity": 6,
+    "displaySeconds": 30,
+    "chartFontSize": 6,
+    "resultHidden": false,
+    "hideLabels": false,
+    "showAlgorithm": false,
+    "overlayBreathRate": true,
+    "showRawSignal": false,
+    "avgCutAlgoToleranceSec": 0.5
+  }
+}

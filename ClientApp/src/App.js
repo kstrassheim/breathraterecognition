@@ -1,23 +1,22 @@
 import React, { Component } from 'react';
 import { Route } from 'react-router';
-import { Layout } from './components/Layout';
+import { NavMenu } from './components/NavMenu';
 import { Home } from './components/Home';
 import { SingleHalfPeriodPage } from './components/SingleHalfPeriodPage';
 import { MultiplePointPage } from './components/MultiplePointPage';
 
 import './custom.css'
 
-export default function App() {
-    const defaultNoiseSensity = 400;
-    const defaultBufferSize = 10;
-    const defaultLowPassSensity = 6;
-    const defaultDisplaySeconds = 30;
-
+export default function App(props) {
     return (
-        <Layout>
-            <Route exact path='/' component={() => <Home defaultNoiseSensity={defaultNoiseSensity} defaultBufferSize={defaultBufferSize} defaultLowPassSensity={defaultLowPassSensity} defaultDisplaySeconds={defaultDisplaySeconds} />} />
-            <Route exact path='/SinglePeriod' component={() => <SingleHalfPeriodPage defaultNoiseSensity={defaultNoiseSensity} defaultBufferSize={defaultBufferSize} defaultLowPassSensity={defaultLowPassSensity} defaultDisplaySeconds={defaultDisplaySeconds} />} />
-            <Route exact path='/MultiplePoint' component={() => <MultiplePointPage defaultNoiseSensity={defaultNoiseSensity} defaultBufferSize={defaultBufferSize} defaultLowPassSensity={defaultLowPassSensity} defaultDisplaySeconds={defaultDisplaySeconds} />} />
-        </Layout>
+        <React.Fragment>
+            {props.settings.darkMode ? <link rel="stylesheet" type="text/css" href="dark.css" /> : <React.Fragment /> }
+            <div className="container-fluid">
+                <NavMenu darkMode={props.settings.darkMode}  />
+                <Route exact path='/' component={() => <Home settingsCollapsed={props.settings.settingsCollapsed} defaultNoiseSensity={props.settings.home.noiseSensity} defaultBufferSize={props.settings.home.bufferSize} defaultLowPassSensity={props.settings.home.lowPassSensity} defaultDisplaySeconds={props.settings.home.displaySeconds} chartFontSize={props.settings.home.chartFontSize} defaultResultHidden={props.settings.home.resultHidden} defaultHideLabels={props.settings.home.hideLabels} defaultShowAlgorithm={props.settings.home.showAlgorithm} defaultOverlayBreathRate={props.settings.home.overlayBreathRate} defaultShowRawSignal={props.settings.home.showRawSignal} defaultAvgCutAlgoToleranceSec={props.settings.home.avgCutAlgoToleranceSec} />} />
+                <Route exact path='/SinglePeriod' component={() => <SingleHalfPeriodPage settingsCollapsed={props.settings.settingsCollapsed} defaultNoiseSensity={props.settings.other.noiseSensity} defaultBufferSize={props.settings.other.bufferSize} defaultLowPassSensity={props.settings.other.lowPassSensity} defaultDisplaySeconds={props.settings.other.displaySeconds} chartFontSize={props.settings.chartFontSize} defaultResultHidden={props.settings.resultHidden} defaultHideLabels={props.settings.other.hideLabels} defaultShowAlgorithm={props.settings.other.showAlgorithm} defaultOverlayBreathRate={props.settings.other.overlayBreathRate} defaultShowRawSignal={props.settings.other.showRawSignal} defaultAvgCutAlgoToleranceSec={props.settings.other.avgCutAlgoToleranceSec} />} />
+                <Route exact path='/MultiplePoint' component={() => <MultiplePointPage settingsCollapsed={props.settings.settingsCollapsed} defaultNoiseSensity={props.settings.other.noiseSensity} defaultBufferSize={props.settings.other.bufferSize} defaultLowPassSensity={props.settings.other.lowPassSensity} defaultDisplaySeconds={props.settings.other.displaySeconds} chartFontSize={props.settings.chartFontSize} defaultResultHidden={props.settings.resultHidden} defaultHideLabels={props.settings.other.hideLabels} defaultShowAlgorithm={props.settings.other.showAlgorithm} defaultOverlayBreathRate={props.settings.other.overlayBreathRate} defaultShowRawSignal={props.settings.other.showRawSignal} defaultAvgCutAlgoToleranceSec={props.settings.other.avgCutAlgoToleranceSec} />} />
+            </div>
+        </React.Fragment>
     );
 }
