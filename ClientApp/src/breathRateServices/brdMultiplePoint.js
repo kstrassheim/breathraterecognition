@@ -2,10 +2,9 @@
 //import { TimedBuffer } from './timedbuffer';
 
 export class BrdMultiplePoint {
-    static minfreq = 5;
-    static maxfreq = 40;
+    static minfreq = 3;
+    static maxfreq = 60;
     
-
     constructor(processBufferSec, noiseSensity, avgCutAlgoToleranceSec, onResultCallback, onSelectCallback, onUnselectCallback, onReset) {
         this.processBufferSec = processBufferSec;
         this.noiseSensity = noiseSensity;
@@ -21,7 +20,7 @@ export class BrdMultiplePoint {
 
     initMinPicks() {
         this.minPicks = Math.floor(this.processBufferSec / 60 * BrdMultiplePoint.minfreq);
-        this.minPicks = this.minPicks > 3 ? this.minPicks : 4;
+        this.minPicks = this.minPicks > 2 ? this.minPicks : 3;
     }
 
     setNoiseSensity(noiseSensity) {
@@ -30,7 +29,6 @@ export class BrdMultiplePoint {
     }
 
     setProcessBufferSeconds(sec) {
-        this.processBuffer.setExpiration(sec);
         this.processBufferSec = sec;
         this.initMinPicks();
     }
@@ -127,7 +125,7 @@ export class BrdMultiplePoint {
 
             let ret = Object.assign({}, picked[picked.length - 1]);
             ret.avg = avg;
-            ret.period = distance / (picked.length - 1);
+            ret.period = distance * 2 / (picked.length - 1);
             ret.frequency = 1 / ret.period;
             ret.frequencyPerMinute = ret.frequency * 60;
             ret.breathRate = Math.round(ret.frequencyPerMinute);

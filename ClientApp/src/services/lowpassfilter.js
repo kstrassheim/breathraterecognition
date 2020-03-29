@@ -11,8 +11,7 @@ export class LowPassFilter {
     }
 
     reset() {
-        this.buffer = [];
-        this.bufferSum = 0;
+        this.applyReset = true;
     }
 
     onPop(ret) {
@@ -23,6 +22,14 @@ export class LowPassFilter {
     }
 
     push(val) {
+        if (this.applyReset) {
+            this.buffer = [];
+            this.bufferSum = 0;
+            this.applyReset = false;
+            this.outputBuffer.clear();
+            return;
+        }
+
         if (val && !Array.isArray(val)) val = [val];
         if (this.paused || this.filterName && val && val.length > 0 && val[0].name !== this.filterName || this.filterPort && val && val.length > 0 && val[0].port !== this.filterPort) { return; }
         val.forEach(v => {
@@ -41,6 +48,14 @@ export class LowPassFilter {
             this.bufferSum += o.value;
             this.buffer.push(o);
 
+            if (this.applyReset) {
+                this.buffer = [];
+                this.bufferSum = 0;
+                this.applyReset = false;
+                this.outputBuffer.clear();
+                return;
+            }
+
             // remove items that are over lp degree
             let toRemove = this.buffer.length > this.degree ? this.buffer.length - this.degree : 0;
             for (let i = 0; i < toRemove; i++) {
@@ -54,6 +69,14 @@ export class LowPassFilter {
             lpo.value = this.bufferSum / (this.buffer.length > 0 ? this.buffer.length : 1);
             // push to output
             this.outputBuffer.push(lpo);
+
+            if (this.applyReset) {
+                this.buffer = [];
+                this.bufferSum = 0;
+                this.applyReset = false;
+                this.outputBuffer.clear();
+                return;
+            }
         });
     }
 
@@ -69,6 +92,6 @@ export class LowPassFilter {
 
     clear() {
         this.outputBuffer.clear();
-        this.buffer.splice(0, this.buffer.length);
+        this.buffer = [];
     }
 }

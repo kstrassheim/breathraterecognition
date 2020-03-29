@@ -33,7 +33,7 @@ export class BrdFourier extends AbstractBrd {
                     <label>Frequencies</label>
                     <div className="row">
                         <ul className="list-group col-3">
-                            {(this.state.result && this.state.result.fourier ? Array.from(this.state.result.fourier.frequencies).map((f, i) =>
+                            {(this.state.result && this.state.result.fourier ? this.state.result.fourier.frequencies.map((f, i) =>
                                 <li className="list-group-item" key={'freq' + i}>{f.re}Hz - {f.im}A</li>
                             ) : '')}
                         </ul>

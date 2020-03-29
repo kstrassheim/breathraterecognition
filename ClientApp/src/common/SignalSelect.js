@@ -12,6 +12,7 @@ export class SignalSelect extends Component {
     constructor(props) {
         super(props);
         this.inputBuffer = new StackedBuffer(props.defaultBufferSize);
+        this.demoBuffer = new StackedBuffer(props.defaultBufferSize);
         this.lowPassFilter = new LowPassFilter(props.defaultBufferSize, props.defaultLowPassSensity);
         this.signalApi = new SignalApi();
         this.demoApi = new DemoApi(props.defaultBufferSize);
@@ -159,6 +160,7 @@ export class SignalSelect extends Component {
     onBufferSizeChanged(e) {
         this.setState({ bufferSize: e.target.value })
         this.inputBuffer.changeSize(e.target.value);
+        this.demoBuffer.changeSize(e.target.value);
         this.lowPassFilter.changeSize(e.target.value);
         this.demoApi.onBufferSizeChanged(e.target.value)
     }
@@ -198,12 +200,14 @@ export class SignalSelect extends Component {
     onPauseChanged(paused) {
         // this.recordButton.current.stop();
         this.inputBuffer.paused = paused;
+        this.demoBuffer.paused = paused;
         this.lowPassFilter.paused = paused;
     }
 
     onHostSelected(host) {
         //this.recordButton.current.stop();
         this.inputBuffer.filterName = host.name;
+        this.demoBuffer.filterName = host.name;
         this.lowPassFilter.filterName = host.name;
         this.reset(true);
     }
@@ -211,6 +215,7 @@ export class SignalSelect extends Component {
     onPortSelected(port) {
         //this.recordButton.current.stop();
         this.inputBuffer.filterPort = port;
+        this.demoBuffer.filterPort = port;
         this.lowPassFilter.filterPort = port;
         this.reset(true);
     }
@@ -247,7 +252,8 @@ export class SignalSelect extends Component {
     reset(ignoreHost) {
         //if (this.recordButton.current) { this.recordButton.current.stop(); }
         this.inputBuffer.clear();
-        this.lowPassFilter.clear();
+        this.demoBuffer.clear();
+        this.lowPassFilter.reset();
         if (this.rawSignalChart.current) { this.rawSignalChart.current.reset(); }
         if (!ignoreHost && this.hostSelector.current) { this.hostSelector.current.reset(); }
     }
@@ -255,9 +261,10 @@ export class SignalSelect extends Component {
 
     componentDidMount() {
         // set callbacks
-        this.demoApi.onSignalCallbacks = [this.hostSelector.current.process.bind(this.hostSelector.current), this.inputBuffer.push.bind(this.inputBuffer), this.lowPassFilter.push.bind(this.lowPassFilter)];
+        this.demoApi.onSignalCallbacks = [this.hostSelector.current.process.bind(this.hostSelector.current), this.demoBuffer.push.bind(this.inputBuffer), this.lowPassFilter.push.bind(this.lowPassFilter)];
         this.signalApi.onSignalCallbacks = [this.hostSelector.current.process.bind(this.hostSelector.current), this.inputBuffer.push.bind(this.inputBuffer), this.lowPassFilter.push.bind(this.lowPassFilter)];
         this.inputBuffer.popCallback = [this.rawSignalChart.current.process.bind(this.rawSignalChart.current)]; //, this.recordButton.current.process.bind(this.recordButton.current)
+        this.demoBuffer.popCallback = [this.rawSignalChart.current.process.bind(this.rawSignalChart.current)]; 
         this.lowPassFilter.popCallback = [this.rawSignalChart.current.process.bind(this.rawSignalChart.current)]
         this.demoApi.connect();
         this.signalApi.connect();
@@ -325,7 +332,7 @@ export class SignalSelect extends Component {
                     </div>
                     <div className="btn-group  mb1" role="group">
                         <label htmlFor="processBufferSecondsSelect" style={{ whiteSpace: 'nowrap' }}>Process Buffer Seconds:</label>
-                        <input type="range" min="1" step="1" max="10" value={this.state.processBufferSeconds} onChange={this.onProcessBufferSecondsChanged.bind(this)} style={{ marginLeft: '5px', marginRight: '5px', boxShadow: '0', outline: '0 !important' }} className="form-control-range form-control custom-range" id="processBufferSecondsSelect" />
+                        <input type="range" min="1" step="1" max="30" value={this.state.processBufferSeconds} onChange={this.onProcessBufferSecondsChanged.bind(this)} style={{ marginLeft: '5px', marginRight: '5px', boxShadow: '0', outline: '0 !important' }} className="form-control-range form-control custom-range" id="processBufferSecondsSelect" />
                         <span> {this.state.processBufferSeconds}</span>
                     </div>
                 </div>

@@ -9,14 +9,21 @@ namespace BreathRateRecognition.Server.Hubs
 {
     public interface IMeasurementDistributionHub
     {
-        Task SendMeasurement(IEnumerable<Metric> metric);
+        Task SendMeasurements(IEnumerable<Metric> metric);
+
+        Task SendMeasurement(Metric metric);
     }
 
     public class MeasurementDistributionHub:Hub, IMeasurementDistributionHub
     {
-        public async Task SendMeasurement(IEnumerable<Metric> metrics)
+        public async Task SendMeasurements(IEnumerable<Metric> metrics)
         {
             await Clients?.All?.SendAsync("measurement", metrics);
+        }
+
+        public async Task SendMeasurement(Metric metric)
+        {
+            await Clients?.All?.SendAsync("measurement", metric);
         }
     }
 }

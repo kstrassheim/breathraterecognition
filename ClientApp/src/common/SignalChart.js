@@ -37,7 +37,6 @@ class LineChart extends Component {
         }
 
         if (this.props.showRawSignal !== nextProps.showRawSignal) {
-
             this.chart.data.datasets.forEach(d => d.hidden = (!d.label.endsWith("LowPass")) ? !nextProps.showRawSignal : d.hidden);
             chartChanged = true;
         }
@@ -213,6 +212,7 @@ export class SignalChart extends LineChart {
                 data: [],
                 label: first.port,
                 borderColor: this.getRandomColor(),
+                lineTension: 0,
                 fill: false,
                 hidden: (!first.port.endsWith("LowPass")) ? !this.props.showRawSignal : false
             }

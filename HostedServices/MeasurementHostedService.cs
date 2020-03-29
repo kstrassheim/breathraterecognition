@@ -18,8 +18,9 @@ namespace Server.Measurement
 {
     public class MeasurementHostedService : IHostedService, IDisposable
     {
-        int bufferSize = 1;
+        int signalMeasureDelayMs = 0;
         int baudRate = 115200;
+        Task send = null;
         string[] additionalMeasureDistributionUrls = new string[] { };
         IConfiguration config;
 
@@ -27,16 +28,6 @@ namespace Server.Measurement
         {
             HubContext = hubContext;
             this.config = configuration;
-
-            try
-            {
-                this.bufferSize = config.GetValue<int>("SendBufferSize");
-                Console.WriteLine($"Using Setting Send buffer size of:{bufferSize}");
-            }
-            catch
-            {
-                Console.WriteLine($"Failed to get Setting Send buffer size using default value of:{bufferSize}");
-            }
 
 
             try
@@ -61,6 +52,16 @@ namespace Server.Measurement
                 Console.WriteLine($"No additional distribution server urls found");
             }
 
+            try
+            {
+                this.signalMeasureDelayMs = config.GetValue<int>("SignalMeasureDelayMs");
+                Console.WriteLine($"Using Setting SignalMeasureDelayMs of:{this.signalMeasureDelayMs}");
+            }
+            catch
+            {
+                Console.WriteLine($"Failed to get Setting Baud Rate using default value:{baudRate}");
+            }
+
         }
 
         private readonly string AppName = System.Environment.MachineName;
@@ -80,7 +81,7 @@ namespace Server.Measurement
             this.CancelTokenSources = null;
         }
 
-        public async Task SendSignalToServer(string server, IEnumerable<Metric> m)
+        public void SendSignalToServer(string server, IEnumerable<Metric> m)
         {
             try
             {
@@ -93,8 +94,8 @@ namespace Server.Measurement
                 // Get the request stream.
                 Stream dataStream = request.GetRequestStream();
                 // Write the data to the request stream.
-                await dataStream.WriteAsync(byteArray, 0, byteArray.Length);
-                WebResponse response = request.GetResponse();
+                dataStream.Write(byteArray, 0, byteArray.Length);
+                var response = request.GetResponse();
                 response.Close();
                 dataStream.Close();
             }
@@ -104,17 +105,11 @@ namespace Server.Measurement
             }
         }
 
-        public async Task SendSignalToServers(IEnumerable<Metric> m)
+        public void PushMetric(Metric m)
         {
-            foreach(var s in this.additionalMeasureDistributionUrls)
-            {
-                await this.SendSignalToServer(s, m);
-            }
-        }
+            this.HubContext.Clients.All.SendAsync("measurement", m);
 
-        public async void PushMetric(Metric m)
-        {
-            // send port wise
+            // HTTP send port wise
             if (!this.buffer.ContainsKey(m.Port))
             {
                 this.buffer[m.Port] = new List<Metric>();
@@ -122,16 +117,26 @@ namespace Server.Measurement
 
             this.buffer[m.Port].Add(m);
 
-            if (this.buffer[m.Port].Count >= this.bufferSize)
+            if (this.send == null || this.send.IsCompleted)
             {
-                var h = this.HubContext.Clients.All.SendAsync("measurement", this.buffer[m.Port]);
-                var r = this.SendSignalToServers(this.buffer[m.Port]);
-                //await h;
-                await r;
-                lock(this.buffer[m.Port])
+                if (this.send != null) { this.send.Dispose(); }
+                this.send = new Task(() =>
                 {
-                    this.buffer[m.Port].Clear();
-                }
+                    Metric[] pop = null;
+                    lock (this.buffer[m.Port])
+                    {
+                        pop = new Metric[this.buffer[m.Port].Count];
+                        this.buffer[m.Port].CopyTo(pop);
+                        this.buffer[m.Port].Clear(); 
+                    }
+
+                    foreach (var amu in this.additionalMeasureDistributionUrls)
+                    {
+                        this.SendSignalToServer(amu, pop);
+                    }
+                });
+
+                this.send.Start();
             }
         }
 
@@ -184,12 +189,13 @@ namespace Server.Measurement
                                         {
                                             try
                                             {
-                                                int val = 0;
+                                                
                                                 var line = p.ReadLine()?.TrimStart('[').TrimEnd(']').Split(',');
+                                                var now = DateTime.Now;
                                                 if (line != null && line.Length > 0)
                                                 {
-                                                    for (var i = 0; i < line.Length; i++)
-                                                    {
+                                                    Parallel.For(0, line.Length, i => {
+                                                        int val = 0;
                                                         if (int.TryParse(line[i].TrimStart('[').TrimEnd(']'), out val) && val != 0)
                                                         {
                                                             this.PushMetric(new Metric()
@@ -197,10 +203,16 @@ namespace Server.Measurement
                                                                 Name = AppName,
                                                                 Port = $"{p.PortName}_{i}",
                                                                 Value = val,
-                                                                Timestamp = DateTime.Now
+                                                                Timestamp = now
                                                             });
                                                         }
-                                                    }
+                                                    });
+                                                }
+
+                                                if (this.signalMeasureDelayMs > 0)
+                                                {
+
+                                                    Thread.Sleep(this.signalMeasureDelayMs);
                                                 }
                                             }
                                             catch { }

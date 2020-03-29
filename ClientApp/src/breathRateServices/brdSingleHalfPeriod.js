@@ -6,6 +6,7 @@ export class BrdSingleHalfPeriod {
     constructor(processBufferSec, noiseSensity, avgCutAlgoToleranceSec, onResultCallback, onSelectCallback, onUnselectCallback, onReset) {
         this.noiseSensity = noiseSensity;
         this.avgCutAlgoToleranceSec = avgCutAlgoToleranceSec;
+        this.defaultProcessBufferSeconds = processBufferSec;
         this.processBuffer = new TimedBuffer(processBufferSec, this.onProcessBufferPop.bind(this));
         this.onResultCallback = onResultCallback;
         this.onSelectCallback = onSelectCallback;
@@ -63,6 +64,7 @@ export class BrdSingleHalfPeriod {
             this.onSelectCallback(values[values.length - 1], 'blue');
         }
         let pick = null;
+        let pick2 = null;
         for (let i = 1; i < values.length; i++) {
 
             // noise detection
@@ -74,36 +76,50 @@ export class BrdSingleHalfPeriod {
 
             if (Math.sign(values[i].value - avg) !== Math.sign(v)) {
                 if (!pick) {
-                    console.log(`first pick - sign ${Math.sign(values[i].value - avg)} - cmp sign ${Math.sign(v)} - val ${values[i].value} - v ${v} - avg ${avg} on ${i} of  ${values.length}`, values[i]);
+                    console.log(`first pick - sign ${Math.sign(values[i].value - avg)} - cmp sign ${Math.sign(values[i].value)} - val ${values[i].value} - v ${v} - avg ${avg} on ${i} of  ${values.length}`, values[i]);
                     pick = values[i];
                     v = pick.value - avg;
                     if (this.onSelectCallback) { this.onSelectCallback(pick, 'red'); }
                 }
                 else {
-                    var ret = moment.duration(moment(values[i].timestamp).diff(moment(pick.timestamp))).asSeconds();
-                    if (ret > this.avgCutAlgoToleranceSec) {
-                        if (this.onSelectCallback) { this.onSelectCallback(values[i], 'green'); }
-                        console.log(`second pick - sign ${Math.sign(values[i].value - avg)} - cmp sign ${Math.sign(v)} - val ${values[i].value} - v ${v} - avg ${avg} on ${i} of  ${values.length}`, values[i]);
-                        let ret = Object.assign({}, values[i]);
-                        ret.avg = avg;
-                        ret.period = moment.duration(moment(values[i].timestamp).diff(moment(pick.timestamp))).asSeconds();
-                        ret.frequency = 1 / ret.period;
-                        ret.frequencyPerMinute = ret.frequency * 60;
-                        ret.breathRate = Math.round(ret.frequencyPerMinute);
-
-                        if (this.onResultCallback) {
-                            this.onResultCallback(ret);
+                    let dur = moment.duration(moment(values[i].timestamp).diff(moment(pick.timestamp))).asSeconds();
+                    if (dur > this.avgCutAlgoToleranceSec) {
+                        if (!pick2) {
+                            console.log(`second pick - sign ${Math.sign(values[i].value - avg)} - cmp sign ${Math.sign(values[i].value)} - val ${values[i].value} - v ${v} - avg ${avg} on ${i} of  ${values.length}`, values[i]);
+                            pick2 = values[i];
+                            v = pick2.value - avg;
+                            if (this.onSelectCallback) { this.onSelectCallback(pick2, 'yellow'); }
                         }
+                        else {
+                            let dur2 = moment.duration(moment(values[i].timestamp).diff(moment(pick2.timestamp))).asSeconds();
+                            if (dur2 > this.avgCutAlgoToleranceSec) {
+                                if (this.onSelectCallback) { this.onSelectCallback(values[i], 'green'); }
+                                console.log(`third pick - sign ${Math.sign(values[i].value - avg)} - cmp sign ${Math.sign(values[i].value)} - val ${values[i].value} - v ${v} - avg ${avg} on ${i} of  ${values.length}`, values[i]);
+                                let ret = Object.assign({}, values[i]);
+                                ret.avg = avg;
+                                ret.period = moment.duration(moment(values[i].timestamp).diff(moment(pick.timestamp))).asSeconds();
 
-                        return ret;
-                    }
-                    else {
-                        console.log(`invalid second pick - sign ${Math.sign(values[i].value - avg)} - cmp sign ${Math.sign(v)} - val ${values[i].value} - v ${v}  - avg ${avg} on ${i} of  ${values.length}`, values[i]);
+                                ret.frequency = 1 / ret.period;
+                                ret.frequencyPerMinute = ret.frequency * 60;
+                                ret.breathRate = Math.round(ret.frequencyPerMinute);
+                                
+                                if (this.onResultCallback) {
+                                    this.onResultCallback(ret);
+                                }
+
+                                // attach process buffer seconds
+                                this.setProcessBufferSeconds(Math.round(ret.period * 1.5));
+
+                                return ret;
+                            }
+                        }
                     }
                 }
             }
         }
 
-      
+        //if value not found set process buffer seconds to default
+        this.setProcessBufferSeconds(Math.round(this.processBuffer.secondsToKeep * 1.5));
+  
     }
 }

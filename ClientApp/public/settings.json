@@ -4,29 +4,29 @@
   "home": {
     "noiseSensity": 400,
     "bufferSize": 10,
-    "lowPassSensity": 6,
-    "displaySeconds": 10,
+    "lowPassSensity": 20,
+    "displaySeconds": 15,
     "chartFontSize": 6,
     "resultHidden": true,
     "hideLabels": true,
     "showAlgorithm": false,
     "overlayBreathRate": true,
     "showRawSignal": false,
-    "avgCutAlgoToleranceSec": 0.5,
-    "processBufferSeconds" :  7
+    "avgCutAlgoToleranceSec": 0.8,
+    "processBufferSeconds" :  15
   },
   "other": {
     "noiseSensity": 400,
     "bufferSize": 10,
-    "lowPassSensity": 6,
-    "displaySeconds": 10,
+    "lowPassSensity": 20,
+    "displaySeconds": 15,
     "chartFontSize": 6,
     "resultHidden": false,
     "hideLabels": false,
     "showAlgorithm": true,
     "overlayBreathRate": true,
     "showRawSignal": false,
-    "avgCutAlgoToleranceSec": 0.5,
-    "processBufferSeconds": 7
+    "avgCutAlgoToleranceSec": 0.8,
+    "processBufferSeconds": 15
   }
 }

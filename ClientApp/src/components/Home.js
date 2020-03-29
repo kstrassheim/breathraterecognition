@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { SignalSelect } from '../common/SignalSelect';
 import { BrdMultiplePoint } from '../breathRateControls/BrdMultiplePoint';
 

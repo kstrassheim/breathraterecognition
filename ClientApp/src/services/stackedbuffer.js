@@ -3,9 +3,10 @@ export class StackedBuffer {
     paused = false;
     filterName = '';
     filterPort = '';
-    constructor(bufferSize) {
+    constructor(bufferSize, popCallback) {
         this.buffer = [];
         this.bufferSize = bufferSize;
+        this.popCallback = [popCallback];
     }
 
     push(val, ignoreFilter) {
@@ -25,17 +26,15 @@ export class StackedBuffer {
         val.forEach(o => {
             this.buffer.push(o);
             if (this.buffer.length >= this.bufferSize) {
+                var pop = this.buffer.splice(0, this.buffer.length); // Object.assign({}, this.buffer);
+                this.clear();
                 if (this.popCallback && Array.isArray(this.popCallback)) {
                     for (let i = 0; i < this.popCallback.length; i++) {
-                        this.popCallback[i](this.buffer);
+                        this.popCallback[i](pop);
                     }
                 }
-
-                this.clear();
             }
         });
-
-       
     }
 
     changeSize(newSize) {
@@ -47,6 +46,6 @@ export class StackedBuffer {
     }
 
     clear() {
-        this.buffer.splice(0, this.buffer.length);
+        return this.buffer.splice(0, this.buffer.length);
     }
 }
