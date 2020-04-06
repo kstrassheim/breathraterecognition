@@ -1,6 +1,6 @@
 import React from 'react';
 import { SignalSelect } from '../common/SignalSelect';
-import { BrdMultiplePoint } from '../breathRateControls/BrdMultiplePoint';
+import { BrdContinousCutCount } from '../breathRateControls/BrdContinousCutCount.';
 
 
 export function Home(props) {
@@ -11,7 +11,7 @@ export function Home(props) {
     return (
         <React.Fragment>
             <SignalSelect ref={signalSelectControl} {...props} />
-            <BrdMultiplePoint ref={breathRateDetectionControl} signalSelectControlRef={signalSelectControl} {...props}> </BrdMultiplePoint>
+            <BrdContinousCutCount ref={breathRateDetectionControl} signalSelectControlRef={signalSelectControl} {...props} />
         </React.Fragment>
     );
 }

@@ -87,7 +87,7 @@ export class FrequencyChart extends BarChart {
         this.chart.data.datasets.splice(0, this.chart.data.datasets.length);
         this.chart.data.labels.splice(0, this.chart.data.labels.length);
         this.chart.data.datasets.push({
-            data: values.map(v => Math.abs(v.im)),
+            data: values.map(v => Math.abs(v.amplitude)),
             backgroundColor: this.barColor,
             barPercentage: 0.5,
             barThickness: 6,
@@ -97,7 +97,7 @@ export class FrequencyChart extends BarChart {
             //borderColor: this.getRandomColor(),
             //fill: false
         });
-        this.chart.data.labels = values.map(v => { return v.re; });
+        this.chart.data.labels = values.map(v => { return v.frequencyPerMinute; });
         
         this.chart.update();
     }

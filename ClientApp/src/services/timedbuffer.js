@@ -15,12 +15,10 @@ export class TimedBuffer {
     }
 
     push(val) {
-        if (this.buffer.length < 1) { this.timer = moment(); }
+        if (this.buffer.length < 1) { this.timer = val.timestamp; }
         this.buffer.push(val);
-        let mm = moment().format();
-        let tm = this.timer.format();
-        let dur = moment.duration(moment().diff(this.timer)).asSeconds();
-        if (moment.duration(moment().diff(this.timer)).asSeconds() > this.secondsToKeep) {
+        let dur = moment.duration(moment(val.timestamp).diff(this.timer)).asSeconds();
+        if (dur > this.secondsToKeep) {
             this.bufferPopCallback(this.buffer);
             this.buffer.splice(0, this.buffer.length);
         }

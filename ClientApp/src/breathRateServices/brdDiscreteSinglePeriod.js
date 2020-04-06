@@ -1,7 +1,7 @@
 ﻿import moment from 'moment';
 import { TimedBuffer } from '../services/timedbuffer';
 
-export class BrdSingleHalfPeriod {
+export class BrdDiscreteSinglePeriod {
 
     constructor(processBufferSec, noiseSensity, avgCutAlgoToleranceSec, onResultCallback, onSelectCallback, onUnselectCallback, onReset) {
         this.noiseSensity = noiseSensity;

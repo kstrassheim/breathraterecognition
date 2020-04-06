@@ -34,7 +34,7 @@ export class NavMenu extends Component {
       <header>
             <Navbar className={"navbar-expand-sm navbar-toggleable-sm" + ((!!this.props.darkMode) ? " navbar-dark" : "")} light={true}>
           <div className="container-fluid">
-                    <NavbarBrand onClick={this.btnCollapseClick.bind(this)}><img src="favicon-32x32.png" width="18" height="18" alt="Logo" style={{ marginTop: '-4px', marginRight:'7px'}} />Breath  Rate</NavbarBrand>
+                <NavbarBrand onClick={this.btnCollapseClick.bind(this)}><img src="favicon-32x32.png" width="18" height="18" alt="Logo" style={{ marginTop: '-4px', marginRight:'7px'}} />Breath Rate</NavbarBrand>
             <NavbarToggler onClick={this.toggleNavbar} className="mr-2" />
             <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!this.state.collapsed} navbar>
               <ul className="navbar-nav flex-grow">
@@ -42,13 +42,13 @@ export class NavMenu extends Component {
                   <NavLink tag={Link} to="/">Home</NavLink>
                 </NavItem>
                 <NavItem>
-                    <NavLink tag={Link} to="/MultiplePoint">Multiple Point</NavLink>
+                    <NavLink tag={Link} to="/ContinousCutCount">Continous Cut Count</NavLink>
                 </NavItem>
                 <NavItem>
-                    <NavLink tag={Link} to="/SinglePeriod">Single Period</NavLink>
+                    <NavLink tag={Link} to="/DiscreteSinglePeriod">Discrete Single Period</NavLink>
                 </NavItem>
                 <NavItem>
-                    <NavLink tag={Link} to="/Fourier">Fourier</NavLink>
+                    <NavLink tag={Link} to="/DFT">DFT</NavLink>
                 </NavItem>
               </ul>
             </Collapse>

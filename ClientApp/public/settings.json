@@ -1,6 +1,6 @@
 {
   "darkMode": true,
-  "settingsCollapsed" :  true,
+  "settingsCollapsed": true,
   "home": {
     "noiseSensity": 400,
     "bufferSize": 10,
@@ -13,9 +13,9 @@
     "overlayBreathRate": true,
     "showRawSignal": false,
     "avgCutAlgoToleranceSec": 0.8,
-    "processBufferSeconds" :  15
+    "processBufferSeconds": 15
   },
-  "other": {
+  "accc": {
     "noiseSensity": 400,
     "bufferSize": 10,
     "lowPassSensity": 20,
@@ -28,5 +28,33 @@
     "showRawSignal": false,
     "avgCutAlgoToleranceSec": 0.8,
     "processBufferSeconds": 15
+  },
+  "acdsp": {
+    "noiseSensity": 400,
+    "bufferSize": 10,
+    "lowPassSensity": 20,
+    "displaySeconds": 15,
+    "chartFontSize": 6,
+    "resultHidden": false,
+    "hideLabels": false,
+    "showAlgorithm": true,
+    "overlayBreathRate": true,
+    "showRawSignal": false,
+    "avgCutAlgoToleranceSec": 0.8,
+    "processBufferSeconds": 15
+  },
+  "dft": {
+    "noiseSensity": 400,
+    "bufferSize": 10,
+    "lowPassSensity": 20,
+    "displaySeconds": 32,
+    "chartFontSize": 6,
+    "resultHidden": false,
+    "hideLabels": false,
+    "showAlgorithm": true,
+    "overlayBreathRate": true,
+    "showRawSignal": false,
+    "avgCutAlgoToleranceSec": 0.8,
+    "processBufferSeconds": 24
   }
 }

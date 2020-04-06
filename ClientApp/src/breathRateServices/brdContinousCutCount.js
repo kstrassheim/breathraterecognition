@@ -1,9 +1,9 @@
 ﻿import moment from 'moment';
 //import { TimedBuffer } from './timedbuffer';
 
-export class BrdMultiplePoint {
-    static minfreq = 3;
-    static maxfreq = 60;
+export class BrdContinousCutCount {
+    static minfreq = 5;
+    static maxfreq = 35;
     
     constructor(processBufferSec, noiseSensity, avgCutAlgoToleranceSec, onResultCallback, onSelectCallback, onUnselectCallback, onReset) {
         this.processBufferSec = processBufferSec;
@@ -19,7 +19,7 @@ export class BrdMultiplePoint {
     }
 
     initMinPicks() {
-        this.minPicks = Math.floor(this.processBufferSec / 60 * BrdMultiplePoint.minfreq);
+        this.minPicks = Math.floor(this.processBufferSec / 60 * BrdContinousCutCount.minfreq);
         this.minPicks = this.minPicks > 2 ? this.minPicks : 3;
     }
 
@@ -131,7 +131,7 @@ export class BrdMultiplePoint {
             ret.breathRate = Math.round(ret.frequencyPerMinute);
 
             // only return valid frequencies
-            if (ret.frequencyPerMinute >= BrdMultiplePoint.minfreq && ret.frequencyPerMinute <= BrdMultiplePoint.maxfreq) {
+            if (ret.frequencyPerMinute >= BrdContinousCutCount.minfreq && ret.frequencyPerMinute <= BrdContinousCutCount.maxfreq) {
                 if (this.onResultCallback) {
                     this.onResultCallback(ret);
                 }

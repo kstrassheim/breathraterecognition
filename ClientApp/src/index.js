@@ -23,18 +23,47 @@ var set = {
         "showRawSignal": false,
         "avgCutAlgoToleranceSec": 0.5
     },
-    "other": {
+    "accc": {
         "noiseSensity": 400,
         "bufferSize": 10,
-        "lowPassSensity": 6,
-        "displaySeconds": 30,
+        "lowPassSensity": 20,
+        "displaySeconds": 15,
         "chartFontSize": 6,
         "resultHidden": false,
         "hideLabels": false,
-        "showAlgorithm": false,
+        "showAlgorithm": true,
         "overlayBreathRate": true,
         "showRawSignal": false,
-        "avgCutAlgoToleranceSec": 0.5
+        "avgCutAlgoToleranceSec": 0.8,
+        "processBufferSeconds": 15
+    },
+    "acdsp": {
+        "noiseSensity": 400,
+        "bufferSize": 10,
+        "lowPassSensity": 20,
+        "displaySeconds": 15,
+        "chartFontSize": 6,
+        "resultHidden": false,
+        "hideLabels": false,
+        "showAlgorithm": true,
+        "overlayBreathRate": true,
+        "showRawSignal": false,
+        "avgCutAlgoToleranceSec": 0.8,
+        "processBufferSeconds": 15
+    },
+    "dft": {
+        "noiseSensity": 400,
+        "bufferSize": 10,
+        "lowPassSensity": 20,
+        "displaySeconds": 32,
+        "chartFontSize": 6,
+        "resultHidden": false,
+        "hideLabels": false,
+        "showAlgorithm": true,
+        "overlayBreathRate": true,
+        "showRawSignal": false,
+        "avgCutAlgoToleranceSec": 0.8,
+        "processBufferSeconds": 24
     }
 };
 
