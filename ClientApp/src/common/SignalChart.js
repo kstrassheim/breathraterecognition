@@ -212,7 +212,7 @@ export class SignalChart extends LineChart {
                 data: [],
                 label: first.port,
                 borderColor: this.getRandomColor(),
-                lineTension: 0,
+                //lineTension: 0,
                 fill: false,
                 hidden: (!first.port.endsWith("LowPass")) ? !this.props.showRawSignal : false
             }
