@@ -20,7 +20,10 @@ namespace Server.Measurement
     {
         int signalMeasureDelayMs = 0;
         int baudRate = 115200;
+        string splitChar = ";";
         Task send = null;
+        string[] filterSerialPorts = new string[] { };
+        string[] filterSensorPorts = new string[] { };
         string[] additionalMeasureDistributionUrls = new string[] { };
         IConfiguration config;
 
@@ -40,16 +43,48 @@ namespace Server.Measurement
                 Console.WriteLine($"Failed to get Setting Baud Rate using default value:{baudRate}");
             }
 
+            try
+            {
+                this.splitChar = config.GetValue<string>("SplitChar");
+                Console.WriteLine($"Using Setting SplitChar of:{this.splitChar}");
+            }
+            catch
+            {
+                Console.WriteLine($"Failed to get Setting SplitChar using default value:{this.splitChar}");
+            }
+
 
             try
             {
                 string val = config.GetValue<string>("AdditionalMeasureDistributionUrls");
-                this.additionalMeasureDistributionUrls = val.Split(';').Select(o => o.Trim())?.ToArray();
+                this.additionalMeasureDistributionUrls = val?.Split(';').Select(o => o.Trim())?.ToArray();
                 Console.WriteLine($"Sending to following additional distribution server urls: {val}");
             }
             catch
             {
                 Console.WriteLine($"No additional distribution server urls found");
+            }
+
+            try
+            {
+                string val = config.GetValue<string>("FilterSerialPorts");
+                this.filterSerialPorts = !string.IsNullOrEmpty(val) ? val?.Split(';').Select(o => o.Trim())?.ToArray() : null;
+                Console.WriteLine($"Filtering serial ports: {val}");
+            }
+            catch
+            {
+                Console.WriteLine($"No filter serial ports found");
+            }
+
+            try
+            {
+                string val = config.GetValue<string>("FilterSensorPorts");
+                this.filterSensorPorts = !string.IsNullOrEmpty(val) ? val?.Split(';').Select(o => o.Trim())?.ToArray() : null;
+                Console.WriteLine($"Filtering sensor ports: {val}");
+            }
+            catch
+            {
+                Console.WriteLine($"No filter sensor ports found");
             }
 
             try
@@ -73,6 +108,7 @@ namespace Server.Measurement
         private Dictionary<string, CancellationTokenSource> CancelTokenSources = new Dictionary<string, CancellationTokenSource>();
 
         private List<SerialPort> ports = new List<SerialPort>();
+        private List<Metric> httpBuffer = new List<Metric>();
         private Dictionary<string, List<Metric>> buffer = new Dictionary<string, List<Metric>>();
 
         public void Dispose()
@@ -108,36 +144,61 @@ namespace Server.Measurement
         public void PushMetric(Metric m)
         {
             this.HubContext.Clients.All.SendAsync("measurement", m);
-
-            // HTTP send port wise
-            if (!this.buffer.ContainsKey(m.Port))
+            if (this.additionalMeasureDistributionUrls != null && this.additionalMeasureDistributionUrls.Length > 0)
             {
-                this.buffer[m.Port] = new List<Metric>();
-            }
-
-            this.buffer[m.Port].Add(m);
-
-            if (this.send == null || this.send.IsCompleted)
-            {
-                if (this.send != null) { this.send.Dispose(); }
-                this.send = new Task(() =>
+                lock(this.httpBuffer)
                 {
-                    Metric[] pop = null;
-                    lock (this.buffer[m.Port])
-                    {
-                        pop = new Metric[this.buffer[m.Port].Count];
-                        this.buffer[m.Port].CopyTo(pop);
-                        this.buffer[m.Port].Clear(); 
-                    }
+                    this.httpBuffer.Add(m);
+                }
 
-                    foreach (var amu in this.additionalMeasureDistributionUrls)
-                    {
-                        this.SendSignalToServer(amu, pop);
-                    }
-                });
+                //lock (this.buffer)
+                //{
+                    
+                //    // HTTP send port wise
+                //    if (!this.buffer.ContainsKey(m.Port))
+                //    {
+                //        this.buffer.Add(m.Port, new List<Metric>());
+                //    }
 
-                this.send.Start();
-            }
+                //    lock (this.buffer[m.Port])
+                //    {
+                //        this.buffer[m.Port].Add(m);
+                //    }
+                //}
+    
+                    if (this.send == null || this.send.IsCompleted)
+                    {
+
+                        if (this.send != null)
+                        {
+                            this.send.Dispose();
+                        }
+
+                        this.send = new Task(() =>
+                        {
+                            Metric[] pop = null;
+
+                            lock (this.httpBuffer)
+                            {
+                                pop = new Metric[this.httpBuffer.Count];
+                                this.httpBuffer.CopyTo(pop);
+                                this.httpBuffer.Clear();
+                            }
+
+                            foreach (var amu in this.additionalMeasureDistributionUrls)
+                            {
+                                this.SendSignalToServer(amu, pop);
+                            }
+
+                            //foreach (var amu in this.additionalMeasureDistributionUrls)
+                            //{
+                            //    this.SendSignalToServer(amu, pop);
+                            //}
+                        });
+
+                        this.send.Start();
+                    }
+                }
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -152,7 +213,10 @@ namespace Server.Measurement
                         lock(this.Tasks)
                         {
                             var pns = SerialPort.GetPortNames();
-
+                            if (this.filterSerialPorts != null && this.filterSerialPorts.Length > 0)
+                            {
+                                pns = pns.Where(o => this.filterSerialPorts.Contains(o))?.ToArray();
+                            }
                             foreach (var n in pns)
                             {
                                 var p = this.ports.FirstOrDefault(sp => sp.PortName == n);
@@ -190,23 +254,30 @@ namespace Server.Measurement
                                             try
                                             {
                                                 
-                                                var line = p.ReadLine()?.TrimStart('[').TrimEnd(']').Split(',');
+                                                var line = p.ReadLine()?.TrimStart('[').TrimEnd(']').Split(this.splitChar);
                                                 var now = DateTime.Now;
                                                 if (line != null && line.Length > 0)
                                                 {
-                                                    Parallel.For(0, line.Length, i => {
+                                                    for (var i = 0; i < line.Length; i++)
+                                                    {
+                                                        var portName = $"{p.PortName}_{i}";
+                                                        if (this.filterSensorPorts != null && this.filterSensorPorts.Length > 0 && !this.filterSensorPorts.Contains(portName))
+                                                        {
+                                                            return;
+                                                        }
+
                                                         int val = 0;
                                                         if (int.TryParse(line[i].TrimStart('[').TrimEnd(']'), out val) && val != 0)
                                                         {
                                                             this.PushMetric(new Metric()
                                                             {
                                                                 Name = AppName,
-                                                                Port = $"{p.PortName}_{i}",
+                                                                Port = portName,
                                                                 Value = val,
                                                                 Timestamp = now
                                                             });
                                                         }
-                                                    });
+                                                    }
                                                 }
 
                                                 if (this.signalMeasureDelayMs > 0)

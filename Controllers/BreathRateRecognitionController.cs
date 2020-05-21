@@ -26,7 +26,12 @@ namespace BreathRateRecognition.Server.Controllers
         [HttpPost]
         public async void Post([FromBody] IEnumerable<Metric> measurement)
         {
-            await this.hub.Clients.All.SendAsync("measurement", measurement);
+            // group by ports and order by timestamp before sending to clients
+            var gm = measurement.GroupBy(o => o.Port);
+            foreach(var g in gm)
+            {
+                await this.hub.Clients.All.SendAsync("measurement", g.AsEnumerable()?.OrderBy(o=>o.Timestamp));
+            }
         }
     }
 }
