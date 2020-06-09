@@ -3,8 +3,8 @@
   "settingsCollapsed": true,
   "home": {
     "noiseSensity": 400,
-    "bufferSize": 10,
-    "lowPassSensity": 20,
+    "bufferSize": 5,
+    "lowPassSensity": 5,
     "displaySeconds": 15,
     "chartFontSize": 6,
     "resultHidden": true,
