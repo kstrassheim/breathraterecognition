@@ -229,7 +229,6 @@ namespace Server.Measurement
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-
             this.mainTask = new Task(() =>
             {
                 while (true)
@@ -289,7 +288,7 @@ namespace Server.Measurement
                                                         var portName = $"{p.PortName}_{i}";
                                                         if (this.filterSensorPorts != null && this.filterSensorPorts.Length > 0 && !this.filterSensorPorts.Contains(portName))
                                                         {
-                                                            return;
+                                                            continue;
                                                         }
 
                                                         int val = 0;
