@@ -1,5 +1,5 @@
 # Breath-Rate-Recognition (2020)
-By using capacitive pressure sensors inside a seat this application is able to retreive the signal and measure the respiratory rate out of its sinus frequency, by using 3 different algorithms (Discrete Fourier Transformation, Continuous Cut Count, Discrete single period)
+By using capacitive pressure sensors inside a seat this application is able to retreive the signal and measure the respiratory rate out of its sinus frequency, by using 3 different algorithms (Discrete Fourier Transformation, Continuous Cut Count, Discrete single period).
 A demo of the application with a recorded signal can be viewed at https://breathrate.azurewebsites.net/
 
 ## Abstract-Keywords
